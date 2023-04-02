@@ -623,8 +623,8 @@ class KanjiWorkSheet:
 
                     # [正解率]列を更新する.
                     crct_pos = self.worksheet.columns.get_loc(self.kCorrect)
-                    incrct_pos = self.worksheet.columns.get_loc(self.kIncorrect)
-                    acc = self.worksheet.iloc[p_i, crct_pos] / self.worksheet.iloc[p_i, incrct_pos]
+                    out_num_pos = self.worksheet.columns.get_loc(self.kOutNum)
+                    acc = self.worksheet.iloc[p_i, crct_pos] / self.worksheet.iloc[p_i, out_num_pos]
 
                     acc_pos = self.worksheet.columns.get_loc(self.kAccuracy_rate)
                     self.worksheet.iloc[p_i, acc_pos] = acc
@@ -633,8 +633,6 @@ class KanjiWorkSheet:
                     hist_pos = self.worksheet.columns.get_loc(self.kHistory)
                     hist = self.worksheet.iloc[p_i, hist_pos]
                     if pd.isna(hist):
-                        hist = ''
-                    if new == self.kCrctMk:
                         hist = str(hist) + 'o'
                     else:
                         hist = str(hist) + 'x'
