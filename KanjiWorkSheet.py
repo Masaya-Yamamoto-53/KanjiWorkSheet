@@ -634,9 +634,9 @@ class KanjiWorkSheet:
                     hist_pos = self.worksheet.columns.get_loc(self.kHistory)
                     hist = self.worksheet.iloc[p_i, hist_pos]
                     if pd.isna(hist):
-                        hist = str(hist) + 'o'
+                        hist = new
                     else:
-                        hist = str(hist) + 'x'
+                        hist = str(hist) + new
                     self.worksheet.iloc[p_i, hist_pos] = hist
 
             # 問題集に反映した数の合計を求める.
