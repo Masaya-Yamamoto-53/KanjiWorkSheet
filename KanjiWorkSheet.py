@@ -22,7 +22,7 @@ class KanjiWorkSheet:
         ]
 
         self.kGrade = self.kFileColumns[0]
-        self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
+        self.kGradeRange = [1, 7]  # 学年の最小値と最大値(上下限のチェックに使用)
         self.kProblem = self.kFileColumns[1]
         self.kAnswer = self.kFileColumns[2]
         self.kNumber = self.kFileColumns[3]
@@ -480,7 +480,8 @@ class KanjiWorkSheet:
                 # 既に出題し、正解している問題を候補に挙げる.
                 list_o = self.kanji_worksheet[pd.notnull(self.kanji_worksheet[self.kResult])]
                 list_o = list_o[list_o[self.kResult] == self.kCrctMk]
-                list_o = list_o.sort_values(self.kOutNum, ascending=True)[0: 20]
+                # 最終更新日で昇順に並び替える.
+                list_o = list_o.sort_values(self.kLastUpdate, ascending=True)[0: 20]
                 self.list_o_idx = list_o.index.values
                 np.random.shuffle(self.list_o_idx)
 
