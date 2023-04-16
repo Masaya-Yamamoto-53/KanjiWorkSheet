@@ -137,7 +137,7 @@ class KanjiWorkSheet_draw:
         # 日付：日
         self.page.drawString(x_pos + 35, y_pos - 240, u'日')
         x_pos_tmp = x_pos + 29
-        for day in str(self.create_date.day):
+        for day in str(self.create_date.day)[::-1]:
             self.page.drawString(x_pos_tmp, y_pos - 240, day)  # 日
             x_pos_tmp -= 7
 
