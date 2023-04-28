@@ -248,7 +248,7 @@ class KanjiWorkSheet_draw:
                 self.page.drawString(x_pos, y_pos, word)
                 y_pos = y_pos - font_size / 3
             # 長音符の場合
-            elif word == u'ー':
+            elif word == u'ー' or word == u'「' or word == u'」':
                 # 用紙を-90度回転し、長音符を印字する.
                 self.page.rotate(-90)
                 self.page.drawString(-1 * y_pos - font_size + font_size / 8, x_pos + font_size / 8, word)
