@@ -71,6 +71,11 @@ class KanjiWorkSheet:
 
         self.student_name = ''       # 出題対象者(生徒名)
         self.grade = []              # 出題範囲指定(学年)
+
+        self.kMDRW = 0
+        self.kMDTR = 1
+        self.kMDWK = 2
+        self.mode = self.kMDTR       # 出題モード
         self.number_of_problem = 20  # 出題数(デフォルト:20)
 
     def load_worksheet(self, path):
@@ -300,6 +305,19 @@ class KanjiWorkSheet:
         """漢字プリントの出題範囲を取得する."""
         return self.grade
 
+    def set_mode(self, mode):
+        """
+        :param mode: 出題モード
+
+        出題モードを設定する.
+        """
+        self.mode = mode
+        self.print_info('出題モードを ' + str(self.mode) + ' に設定しました.')
+
+    def get_mode(self):
+        """出題モードを取得する."""
+        return self.mode
+
     def set_number_of_problem(self, num):
         """
         :param num: 漢字プリントの問題の出題数
@@ -431,6 +449,46 @@ class KanjiWorkSheet:
         self.print_info('漢字テストを作成します.')
         self.print_info('========================================')
 
+        if   self.mode == self.kMDRW:
+            self.create_review_worksheet()
+        elif self.mode == self.kMDWK:
+            self.create_weakness_worksheet()
+        else:
+            self.create_train_worksheet()
+
+        return len(err_msg) != 0, err_msg
+
+    def create_review_worksheet(self):
+        self.print_info("Review")
+        # テスト問題を選定する
+        # 毎日同じ時間帯に学習する場合は、昨日間違えた問題を出力することができないため、
+        # 2時間オフセットをいれる。
+        self.create_date = pd.to_datetime(datetime.datetime.today())
+
+        num = self.get_number_of_problem()
+
+        # 既に出題し、正解している問題を候補に挙げる.
+        list_o = self.kanji_worksheet[pd.notnull(self.kanji_worksheet[self.kResult])]
+        list_o = list_o[list_o[self.kResult] == self.kCrctMk]
+        # 最終更新日で昇順に並び替える.
+        list_o = list_o.sort_values(self.kLastUpdate, ascending=True)[0: 20]
+        self.list_o_idx = list_o.index.values
+        np.random.shuffle(self.list_o_idx)
+
+        self.kanji_worksheet_idx = self.list_o_idx[0:num]
+
+        # それでも足りない場合は、一日後や一週間後、一ヶ月後に出題する予定の未出題の問題を選択することもできるが、
+        # レアケースのため、出題数を削ることで対応する。
+        self.set_number_of_problem(len(self.kanji_worksheet_idx))
+
+        # ランダムに並び替える.
+        np.random.shuffle(self.kanji_worksheet_idx)
+        # Excelで読み込んだ時に妙な解釈をされ、形式が壊れてしまうため、シングルクォートで囲っておく.
+        now = "'" + str(pd.to_datetime(datetime.datetime.today())) + "'"
+        self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kLastUpdate] = now
+        self.kanji_worksheet = self.kanji_worksheet.loc[self.kanji_worksheet_idx, :]
+
+    def create_train_worksheet(self):
         # テスト問題を選定する
         # 毎日同じ時間帯に学習する場合は、昨日間違えた問題を出力することができないため、
         # 2時間オフセットをいれる。
@@ -500,7 +558,32 @@ class KanjiWorkSheet:
         self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kLastUpdate] = now
         self.kanji_worksheet = self.kanji_worksheet.loc[self.kanji_worksheet_idx, :]
 
-        return len(err_msg) != 0, err_msg
+    def create_weakness_worksheet(self):
+        # テスト問題を選定する
+        # 毎日同じ時間帯に学習する場合は、昨日間違えた問題を出力することができないため、
+        # 2時間オフセットをいれる。
+        self.create_date = pd.to_datetime(datetime.datetime.today())
+        num = self.get_number_of_problem()
+
+        # 既に出題し、正解している問題を候補に挙げる.
+        list_o = self.kanji_worksheet[pd.notnull(self.kanji_worksheet[self.kResult])]
+        list_o = list_o[list_o[self.kResult] == self.kCrctMk]
+
+        # 間違えた問題を最優先で選ぶ。
+        hist = list_o[self.kHistory].str[-10:].str.count(self.kIncrctMk)
+
+        self.kanji_worksheet_idx = hist.sort_values(ascending=False).head(num).index
+
+        # それでも足りない場合は、一日後や一週間後、一ヶ月後に出題する予定の未出題の問題を選択することもできるが、
+        # レアケースのため、出題数を削ることで対応する。
+        self.set_number_of_problem(len(self.kanji_worksheet_idx))
+
+        # ランダムに並び替える.
+        #np.random.shuffle(self.kanji_worksheet_idx)
+        # Excelで読み込んだ時に妙な解釈をされ、形式が壊れてしまうため、シングルクォートで囲っておく.
+        now = "'" + str(pd.to_datetime(datetime.datetime.today())) + "'"
+        self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kLastUpdate] = now
+        self.kanji_worksheet = self.kanji_worksheet.loc[self.kanji_worksheet_idx, :]
 
     def report_kanji_worksheet(self):
         """漢字プリントの出題問題の概要を表示する."""

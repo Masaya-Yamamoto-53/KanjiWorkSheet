@@ -33,6 +33,14 @@ class KanjiWorkSheet_gui:
         self.kJS5 = '小学五年生'
         self.kJS6 = '小学六年生'
         self.kGradeKeyList = [self.kJS1, self.kJS2, self.kJS3, self.kJS4, self.kJS5, self.kJS6]
+        self.kMDRW = '復習'
+        self.kMDTR = '練習'
+        self.kMDWK = '苦手'
+        self.kMode = '出題モード'
+        self.kModeKeyList = [self.kMDRW, self.kMDTR, self.kMDWK]
+        self.kModeValueList = [self.KanjiWorkSheet.kMDRW
+                             , self.KanjiWorkSheet.kMDTR
+                             , self.KanjiWorkSheet.kMDWK]
         self.kTotal = '　　　合計'
 
         self.path_of_setting_file = './.setting'
@@ -75,6 +83,8 @@ class KanjiWorkSheet_gui:
         self.create_widget_problem_region(self.SelectFrame_Range_Num, row=0, column=0)
         # 出題数用のウィジェット作成
         self.create_widget_select_number_of_problem(self.SelectFrame_Range_Num, row=0, column=1)
+        # 出題選択モードのウィジェット作成
+        self.create_widget_select_mode(self.SelectFrame_Range_Num, row=1, column=0)
         # 採点用のウィジェット作成
         self.create_widget_scoring(self.ScoringFrame, row=0, column=0)
         # レポート用ウィジェット作成
@@ -213,6 +223,30 @@ class KanjiWorkSheet_gui:
                 , state=tk.DISABLED
         )
         self.SelectNumberOfProblemFrame_Entry.pack(side=tk.LEFT)
+
+    # 出題選択モードのウィジェット作成
+    def create_widget_select_mode(self, root, row, column):
+        # 出題モードフレーム
+        self.SelectModeFrame = tk.LabelFrame(root, padx=2, pady=2, text='出題モード')
+        self.SelectModeFrame.grid(row=row, column=column, sticky=tk.W+tk.N)
+
+        # 出題モード選択
+        # チェックボタンを作成する.
+        self.SelectModeFrameRadiobutton_Value = {}
+        self.SelectModeFrame_Radiobutton = {}
+        self.radio_value = tk.IntVar(value=-1)
+        for key, value in zip(self.kModeKeyList, self.kModeValueList):
+            # チェックボックスの左側を作成する.
+            self.SelectModeFrame_Radiobutton[key] = tk.Radiobutton(
+                      self.SelectModeFrame
+                    , text=key
+                    , command=self.Event_RadioButton
+                    , variable=self.radio_value
+                    , value=value
+                    , anchor='w'
+                    , state=tk.DISABLED
+            )
+            self.SelectModeFrame_Radiobutton[key].pack(side='left')
 
     # 採点用のウィジェット作成
     def create_widget_scoring(self, root, row, column):
@@ -584,6 +618,7 @@ class KanjiWorkSheet_gui:
                     , self.kNumber
                     , self.kJS1, self.kJS2, self.kJS3
                     , self.kJS4, self.kJS5, self.kJS6
+                    , self.kMode
             ]
             # 空の .setting ファイルを新規作成
             self.setting = pd.DataFrame(columns=columns)
@@ -644,6 +679,14 @@ class KanjiWorkSheet_gui:
     # 「出題範囲選択」のチェックボタンのデータを取得する.
     def get_selected_student_grade(self, key):
         return self.ProblemRegionFrame_Checkbutton_Value[key].get()
+
+    # 「出題モード」のラジオボタンのデータを設定する.
+    def get_selected_student_mode(self):
+        return self.radio_value.get()
+
+    # 「出題モード」のラジオボタンのデータを取得する.
+    def set_selected_student_mode(self, value):
+        self.radio_value.set(value)
 
     # 「出題数」エントリーを設定する.
     def set_number_of_problem(self, value):
@@ -713,6 +756,16 @@ class KanjiWorkSheet_gui:
     # 「出題数」のエントリーを無効にする.
     def disable_number_of_problem_entry(self):
         self.SelectNumberOfProblemFrame_Entry['state'] = tk.DISABLED
+
+    # 「出題モード」のラジオボタンを有効にする.
+    def enable_mode_Radiobutton(self):
+        for key in self.kModeKeyList:
+            self.SelectModeFrame_Radiobutton[key]['state'] = tk.NORMAL
+
+    # 「出題モード」のラジオボタンを無効にする.
+    def disable_mode_Radiobutton(self):
+        for key in self.kModeKeyList:
+            self.SelectModeFrame_Radiobutton[key]['state'] = tk.DISABLED
 
     # 「回答」のエントリーを有効にする.
     def enable_scoring_answer_text(self, key):
@@ -784,6 +837,12 @@ class KanjiWorkSheet_gui:
         ################################################################################
         # 学年を設定する.
         self.KanjiWorkSheet.set_grade(grade_list)
+        ################################################################################
+
+    def set_mode(self):
+        ################################################################################
+        # 出題モードを設定する.
+        self.KanjiWorkSheet.set_mode(self.get_selected_student_mode())
         ################################################################################
 
     # 「問題数」エントリーを有効にする.
@@ -1127,6 +1186,7 @@ class KanjiWorkSheet_gui:
                         , self.kJS4: [False]
                         , self.kJS5: [False]
                         , self.kJS6: [False]
+                        , self.kMode: [2]
                 })
                 # 設定ファイルにデータを結合し, インデックスを更新する.
                 self.setting = pd.concat([self.setting, pd_data], axis=0)
@@ -1214,6 +1274,15 @@ class KanjiWorkSheet_gui:
             self.enable_number_of_problem_entry()
             # 選択した生徒の出題数を設定する.
             self.set_number_of_problem(self.setting.iloc[i, self.setting.columns.get_loc(self.kNumber)])
+
+            # 「出題モード」のエントリーを有効にする.
+            self.enable_mode_Radiobutton()
+            # 設定ファイルからラジオボタンの設定を取得し, 反映する.
+            value = str(self.setting.iloc[i, self.setting.columns.get_loc(self.kMode)])
+            self.set_selected_student_mode(value)
+
+            # 「出題モード」を設定する.
+            self.set_mode()
 
             # 採点を更新する.
             err_num = self.update_scoring()
@@ -1356,6 +1425,21 @@ class KanjiWorkSheet_gui:
 
         # 学年の情報を取得し, 設定する.
         self.set_grade()
+
+    def Event_RadioButton(self):
+        self.KanjiWorkSheet.print_info('Call: Event_RadioButton')
+
+        # 登録者の要素数を取得する.
+        i = self.setting[self.setting[self.kStudentName] == self.get_selected_student_name()].index[0]
+
+        # ラジオボタンの値を取得し, 登録者の情報を更新する.
+        self.setting.iloc[i, self.setting.columns.get_loc(self.kMode)] = self.get_selected_student_mode()
+
+        # 設定ファイルに保存する.
+        self.save_setting_file()
+
+        # 出題モードを取得し, 設定する.
+        self.set_mode()
 
     # イベント発生条件:「出題数」エントリーを変更したとき
     # 処理概要:出題数を更新する.
