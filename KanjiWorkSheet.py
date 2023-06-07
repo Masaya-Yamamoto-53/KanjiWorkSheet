@@ -17,7 +17,7 @@ class KanjiWorkSheet:
 
         # 問題集/ログの列
         self.kFileColumns = [
-                  '学年', '問題文', '答え', '番号', '管理番号', '最終更新日', '結果', '履歴'
+                  '学年', '問題文', '答え', '番号', '管理番号', '最終更新日', '結果', '履歴', '結果の履歴'
         ]
 
         self.kGrade = self.kFileColumns[0]
@@ -29,6 +29,7 @@ class KanjiWorkSheet:
         self.kLastUpdate = self.kFileColumns[5]
         self.kResult = self.kFileColumns[6]
         self.kHistory = self.kFileColumns[7]
+        self.kHistRlt = self.kFileColumns[8]
 
         # 漢字テストの結果
         self.kNotMk = '-'  # 未出題の印は、本当はNanだが、キーとして登録するため、ハイフンとする.
@@ -678,6 +679,15 @@ class KanjiWorkSheet:
                         hist = new
                     else:
                         hist = str(hist) + new
+                    self.worksheet.iloc[p_i, hist_pos] = hist
+
+                    # ステータスの履歴を更新する.
+                    hist_pos = self.worksheet.columns.get_loc(self.kHistRlt)
+                    hist = self.worksheet.iloc[p_i, hist_pos]
+                    if pd.isna(hist):
+                        hist = "'-"
+                    else:
+                        hist = str(hist) + old
                     self.worksheet.iloc[p_i, hist_pos] = hist
 
             # 問題集に反映した数の合計を求める.
