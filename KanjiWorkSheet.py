@@ -13,12 +13,11 @@ from KanjiWorkSheet_draw import KanjiWorkSheet_draw
 class KanjiWorkSheet:
     def __init__(self):
         # デバッグ情報を表示する場合はTrue
-        self.kDebug = False
+        self.kDebug = True
 
         # 問題集/ログの列
         self.kFileColumns = [
-                  '学年', '問題文', '答え', '番号', '管理番号', '最終更新日', '結果'
-                , '出題数', '正解数', '不正解数', '正解率', '履歴'
+                  '学年', '問題文', '答え', '番号', '管理番号', '最終更新日', '結果', '履歴'
         ]
 
         self.kGrade = self.kFileColumns[0]
@@ -29,11 +28,7 @@ class KanjiWorkSheet:
         self.kAdminNumber = self.kFileColumns[4]
         self.kLastUpdate = self.kFileColumns[5]
         self.kResult = self.kFileColumns[6]
-        self.kOutNum = self.kFileColumns[7]
-        self.kCorrect = self.kFileColumns[8]
-        self.kIncorrect = self.kFileColumns[9]
-        self.kAccuracy_rate = self.kFileColumns[10]
-        self.kHistory = self.kFileColumns[11]
+        self.kHistory = self.kFileColumns[7]
 
         # 漢字テストの結果
         self.kNotMk = '-'  # 未出題の印は、本当はNanだが、キーとして登録するため、ハイフンとする.
@@ -675,43 +670,6 @@ class KanjiWorkSheet:
                     self.worksheet.iloc[p_i, p_result_pos] = key
                     # 各結果の回数をカウントする.
                     dict[key] += 1
-
-                    # [出題数]列を更新する.
-                    out_num_pos = self.worksheet.columns.get_loc(self.kOutNum)
-                    out_num = self.worksheet.iloc[p_i, out_num_pos]
-                    # 数字以外の入力があった場合は1にクリアする.
-                    out_num = pd.to_numeric(out_num, errors='coerce')
-                    if pd.notna(out_num):
-                        out_num += 1
-                    else:
-                        out_num = 1
-                    self.worksheet.iloc[p_i, out_num_pos] = out_num
-
-                    # [正解]、[不正解]列を更新する.
-                    # 今回、正解の場合は、[正解]列をカウントアップする.
-                    if new == self.kCrctMk:
-                        row = self.kCorrect
-                    # 今回、不正解の場合は、[不正解]列をカウントアップする.
-                    else:
-                        row = self.kIncorrect
-
-                    out_num_pos = self.worksheet.columns.get_loc(row)
-                    out_num = self.worksheet.iloc[p_i, out_num_pos]
-                    # 数字以外の入力があった場合は1にクリアする.
-                    out_num = pd.to_numeric(out_num, errors='coerce')
-                    if pd.notna(out_num):
-                        out_num += 1
-                    else:
-                        out_num = 1
-                    self.worksheet.iloc[p_i, out_num_pos] = out_num
-
-                    # [正解率]列を更新する.
-                    crct_pos = self.worksheet.columns.get_loc(self.kCorrect)
-                    out_num_pos = self.worksheet.columns.get_loc(self.kOutNum)
-                    acc = self.worksheet.iloc[p_i, crct_pos] / self.worksheet.iloc[p_i, out_num_pos]
-
-                    acc_pos = self.worksheet.columns.get_loc(self.kAccuracy_rate)
-                    self.worksheet.iloc[p_i, acc_pos] = acc
 
                     # 履歴を更新する.
                     hist_pos = self.worksheet.columns.get_loc(self.kHistory)
