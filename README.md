@@ -1,7 +1,7 @@
 # 漢字プリント作成ツール
 ## 使い方
 ### プリント作成方法
-![image](https://user-images.githubusercontent.com/47249430/221411316-c6069e6f-0b05-42f6-9653-6c479b74aac8.png) 
+![image](https://github.com/Masaya-Yamamoto-53/KanjiWorkSheet/assets/47249430/f19ecd03-d84c-4f97-9619-f50fecf568b6)
 1. 初回は、生徒登録エントリーで生徒を登録する。  
    名前を入力して、登録ボタンを押すと登録できる。  
 ![image](https://user-images.githubusercontent.com/47249430/221411531-b247cb70-2b7f-45fa-acb3-f28b030a2742.png) 
