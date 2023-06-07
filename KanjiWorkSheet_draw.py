@@ -47,15 +47,15 @@ class KanjiWorkSheet_draw:
     def create_kanji_worksheet(self):
         """漢字プリントを作成する."""
         # 出題数を上下に分割し、出題する。
-        # 分割した時、8未満であれば、8にする。
-        # 問題数が8以下の場合、8問にした方が見栄えが良いため.
+        # 分割した時、10未満であれば、記載の間隔を10にする。
+        # 問題数が10以下の場合、10問にした方が見栄えが良いため.
         num = self.number_of_problem
-        if num < 8:
+        if num < 10:
             self.kProbTopNum = num
             self.kProbBtmNum = 0
         else:
             num = math.ceil(self.number_of_problem / 2)
-            num = max(num, 8)
+            num = max(num, 10)
 
             self.kProbTopNum = num
             self.kProbBtmNum = self.number_of_problem - num
