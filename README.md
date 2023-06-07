@@ -11,15 +11,20 @@
 ![image](https://user-images.githubusercontent.com/47249430/221411695-56ce88e5-47eb-49ec-8a2e-aaa82b5e3e43.png)  
 4. 出題範囲の選択をする（複数選択可）。  
 ![image](https://user-images.githubusercontent.com/47249430/221411729-b68db2c3-01f4-4dff-84a3-03f96788279b.png) 
-5. 出題数を決定する。最大20問。  
+5. 出題モードを選択する。  
+![image](https://github.com/Masaya-Yamamoto-53/KanjiWorkSheet/assets/47249430/aed697b4-c1b1-4655-920e-b5545ed71e94)  
+復習: 正解している問題の中で、出題日が最も古い問題を優先して出題する。  
+練習: 「学習の進め方」の優先順位に従って出題する。  
+苦手: 正解している問題の中で、過去10回で間違った回数が多いものを優先して出題する。  
+6. 出題数を決定する。最大20問。  
 ![image](https://user-images.githubusercontent.com/47249430/221411748-a84af35f-46a6-4a49-9f5a-1ad7491fc05f.png)  
-6. プリント作成ボタンを押すと、PDF形式で漢字プリントを作成する。  
+7. プリント作成ボタンを押すと、PDF形式で漢字プリントを作成する。  
 ![image](https://user-images.githubusercontent.com/47249430/221411825-52621f04-be6f-47cc-a5fe-7429aa579ed8.png) 
-7. 印刷ボタンを押すと、作成した漢字プリントを開くことができる。  
+8. 印刷ボタンを押すと、作成した漢字プリントを開くことができる。  
 ![image](https://user-images.githubusercontent.com/47249430/221411848-1e1a0728-0be8-4caa-ab81-3b33dc437477.png)  
 
 ### 学習の進め方
-以下、1、2を繰り返す。
+以下、1、2を繰り返す（出題モードが"練習"の場合）。
 1. 漢字プリント作成ツールで漢字プリントを作成する。
 2. 問題を解いて、答え合わせをする。
 下図の部分に作成した漢字プリントの答えが表示される。  
