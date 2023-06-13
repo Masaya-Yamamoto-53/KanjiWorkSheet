@@ -1442,7 +1442,13 @@ class KanjiWorkSheet_gui:
         self.set_mode()
 
         # 採点を更新する.
-        self.update_scoring()
+        err_no = self.update_scoring()
+        if err_no == 0:
+            # 「採点完了」ボタンを有効にする.
+            self.enable_scoring_button()
+        else:
+            # 「採点完了」ボタンを無効にする.
+            self.disable_scoring_button()
 
     # イベント発生条件:「出題数」エントリーを変更したとき
     # 処理概要:出題数を更新する.
