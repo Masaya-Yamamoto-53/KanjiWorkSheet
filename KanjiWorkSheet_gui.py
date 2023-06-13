@@ -36,7 +36,7 @@ class KanjiWorkSheet_gui:
         self.kMDRW = '復習'
         self.kMDTR = '練習'
         self.kMDWK = '苦手'
-        self.kMode = '出題モード'
+        self.kMode = '出題形式'
         self.kModeKeyList = [self.kMDRW, self.kMDTR, self.kMDWK]
         self.kModeValueList = [self.KanjiWorkSheet.kMDRW
                              , self.KanjiWorkSheet.kMDTR
@@ -227,7 +227,7 @@ class KanjiWorkSheet_gui:
     # 出題選択モードのウィジェット作成
     def create_widget_select_mode(self, root, row, column):
         # 出題モードフレーム
-        self.SelectModeFrame = tk.LabelFrame(root, padx=2, pady=2, text='出題モード')
+        self.SelectModeFrame = tk.LabelFrame(root, padx=2, pady=2, text=self.kMode)
         self.SelectModeFrame.grid(row=row, column=column, sticky=tk.W+tk.N)
 
         # 出題モード選択
@@ -644,7 +644,7 @@ class KanjiWorkSheet_gui:
         if not os.path.isdir(logdir):
             os.mkdir(logdir)
 
-        return logdir + '.' + name + '.log'
+        return logdir + '.' + name + str(self.KanjiWorkSheet.get_mode()) + '.log'
 
     # 「生徒登録」エントリーのデータを削除する.
     def del_registered_student_entry(self):
@@ -1441,6 +1441,9 @@ class KanjiWorkSheet_gui:
         # 出題モードを取得し, 設定する.
         self.set_mode()
 
+        # 採点を更新する.
+        self.update_scoring()
+
     # イベント発生条件:「出題数」エントリーを変更したとき
     # 処理概要:出題数を更新する.
     def Event_ChangeNumberOfProblem(self, var, indx, mode):
@@ -1542,6 +1545,9 @@ class KanjiWorkSheet_gui:
             # 何らかのエラーメッセージを取得した場合は, メッセージボックスで通知する.
             for msg in err_msg:
                 tk.messagebox.showerror('Error', msg)
+
+        # 出題数を設定する.
+        self.set_number_of_problem(self.get_number_of_problem())
 
         # 学年を取得する.
         grade = self.KanjiWorkSheet.get_grade()
