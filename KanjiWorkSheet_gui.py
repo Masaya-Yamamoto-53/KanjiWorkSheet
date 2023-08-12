@@ -363,12 +363,12 @@ class KanjiWorkSheet_gui:
                 , self.kTotal
         ]
         # レポート
-        self.create_widget_report_Problem(self.Report_ProblemFrame, arr)      # 出題数
-        self.create_widget_report_Correct(self.Report_CorrectFrame, arr)      # 正解
-        self.create_widget_report_InCorrect(self.Report_InCorrectFrame, arr)  # 不正解
-        self.create_widget_report_Day(self.Report_DayFrame, arr)              # 1日後出題
-        self.create_widget_report_Week(self.Report_WeekFrame, arr)            # 1週間後出題
-        self.create_widget_report_Month(self.Report_MonthFrame, arr)          # 1ヶ月後出題
+        self.create_widget_report_Problem(self.Report_ProblemFrame, arr, u'出題状況')
+        self.create_widget_report_Correct(self.Report_CorrectFrame, arr, u'　正解')
+        self.create_widget_report_InCorrect(self.Report_InCorrectFrame, arr, u'不正解')
+        self.create_widget_report_Day(self.Report_DayFrame, arr, u'1日後')
+        self.create_widget_report_Week(self.Report_WeekFrame, arr, u'1週間後')
+        self.create_widget_report_Month(self.Report_MonthFrame, arr, u'1ヶ月後')
 
     # レポート:出題数用のウィジェット作成
     def create_widget_report_OutInfo(self, root):
@@ -401,11 +401,11 @@ class KanjiWorkSheet_gui:
         tmp_entry1.pack(side=tk.TOP)
 
     # レポート:問題数用のウィジェット作成
-    def create_widget_report_Problem(self, root, arr):
+    def create_widget_report_Problem(self, root, arr, text):
         self.Report_ProblemFrame_Title = tk.Frame(root)
         self.Report_ProblemFrame_Title.grid(row=0, column=0)
 
-        self.Report_ProblemFrame_Title_text = tk.Label(self.Report_ProblemFrame_Title, text='出題状況')
+        self.Report_ProblemFrame_Title_text = tk.Label(self.Report_ProblemFrame_Title, text=text)
         self.Report_ProblemFrame_Title_text.pack()
 
         self.Report_Problem_Frame = {}
@@ -440,7 +440,7 @@ class KanjiWorkSheet_gui:
             i = i + 1
 
     # レポート:正解用のウィジェット作成
-    def create_widget_report_Correct(self, root, arr):
+    def create_widget_report_Correct(self, root, arr, text):
         self.Report_CorrectFrame_Title = tk.Frame(root)
         self.Report_CorrectFrame_Title.grid(row=0, column=0)
 
@@ -467,11 +467,11 @@ class KanjiWorkSheet_gui:
             i = i + 1
 
     # レポート:不正解用のウィジェット作成
-    def create_widget_report_InCorrect(self, root, arr):
+    def create_widget_report_InCorrect(self, root, arr, text):
         self.Report_InCorrectFrame_Title = tk.Frame(root)
         self.Report_InCorrectFrame_Title.grid(row=0, column=0)
 
-        self.Report_InCorrectFrame_Title_text = tk.Label(self.Report_InCorrectFrame_Title, text='不正解')
+        self.Report_InCorrectFrame_Title_text = tk.Label(self.Report_InCorrectFrame_Title, text=text)
         self.Report_InCorrectFrame_Title_text.pack()
 
         self.Report_InCorrect_Frame = {}
@@ -494,11 +494,11 @@ class KanjiWorkSheet_gui:
             i = i + 1
 
     # レポート:1日後用のウィジェット作成
-    def create_widget_report_Day(self, root, arr):
+    def create_widget_report_Day(self, root, arr, text):
         self.Report_DayFrame_Title = tk.Frame(root)
         self.Report_DayFrame_Title.grid(row=0, column=0)
 
-        self.Report_DayFrame_Title_text = tk.Label(self.Report_DayFrame_Title, text='1日後')
+        self.Report_DayFrame_Title_text = tk.Label(self.Report_DayFrame_Title, text=text)
         self.Report_DayFrame_Title_text.pack()
 
         self.Report_Day_Frame = {}
@@ -521,11 +521,11 @@ class KanjiWorkSheet_gui:
             i = i + 1
 
     # レポート:1週間後用のウィジェット作成
-    def create_widget_report_Week(self, root, arr):
+    def create_widget_report_Week(self, root, arr, text):
         self.Report_WeekFrame_Title = tk.Frame(root)
         self.Report_WeekFrame_Title.grid(row=0, column=0)
 
-        self.Report_WeekFrame_Title_text = tk.Label(self.Report_WeekFrame_Title, text='1週間後')
+        self.Report_WeekFrame_Title_text = tk.Label(self.Report_WeekFrame_Title, text=text)
         self.Report_WeekFrame_Title_text.pack()
 
         self.Report_Week_Frame = {}
@@ -548,11 +548,11 @@ class KanjiWorkSheet_gui:
             i = i + 1
 
     # レポート:1ヶ月後用のウィジェット作成
-    def create_widget_report_Month(self, root, arr):
+    def create_widget_report_Month(self, root, arr, text):
         self.Report_MonthFrame_Title = tk.Frame(root, padx=10, pady=0)
         self.Report_MonthFrame_Title.grid(row=0, column=0)
 
-        self.Report_MonthFrame_Title_text = tk.Label(self.Report_MonthFrame_Title, text='1ヶ月後')
+        self.Report_MonthFrame_Title_text = tk.Label(self.Report_MonthFrame_Title, text=text)
         self.Report_MonthFrame_Title_text.pack()
 
         self.Report_Month_Frame = {}
@@ -1122,7 +1122,9 @@ class KanjiWorkSheet_gui:
             tolnum = self.KanjiWorkSheet.get_number_of_problem_with_grade(grade)
             self.insert_report_tolnum_entry(key, str(tolnum))
 
-            outnum = self.KanjiWorkSheet.get_number_of_issued_problem(grade)
+            outnum = self.KanjiWorkSheet.get_number_of_problem_with_grade(grade) \
+                   - self.KanjiWorkSheet.get_number_of_problem_with_status(grade, self.KanjiWorkSheet.kNotMk)
+
             msg = self.insert_fluc_msg(diff, outnum_old, outnum)
             self.insert_report_outnum_entry(key, msg)
 
