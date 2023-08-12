@@ -4,6 +4,8 @@
 # see https://opensource.org/licenses/MIT (英語)
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 import os
+import re
+import csv
 import datetime as datetime
 import pandas as pd
 import numpy as np
@@ -80,6 +82,29 @@ class KanjiWorkSheet:
         self.kMDWK = 2  # 苦手モード
         self.mode = self.kMDTR       # 出題モード
         self.number_of_problem = 20  # 出題数(デフォルト:20)
+
+        # 漢字マスタの読み込み.
+        self.kanji_by_grade_list = [[] for _ in range(6)]
+
+    def check_kanji_by_grade(self):
+        grade_old = []
+        for grade in range(1, 6+1):
+            worksheet = self.worksheet[self.worksheet[self.kGrade] == grade]
+            if len(worksheet) > 0:
+                for ans in worksheet[self.kAnswer]:
+                    # 1語ずつ配列に格納する
+                    self.kanji_by_grade_list[grade].append([char for char in ans])
+
+                # 多次元を1次元に変換
+                self.kanji_by_grade_list[grade] = [item for sublist in self.kanji_by_grade_list[grade] for item in sublist]
+                self.kanji_by_grade_list[grade] = sorted(self.kanji_by_grade_list[grade])
+                self.kanji_by_grade_list[grade] = list(set(self.kanji_by_grade_list[grade]))
+
+                self.kanji_by_grade_list[grade] = list(set(self.kanji_by_grade_list[grade]) - set(grade_old))
+                # 現在の学年の漢字だけを残すため、それ以降の漢字を記憶しておく.
+                grade_old = grade_old + self.kanji_by_grade_list[grade]
+
+                self.print_info('小学' + str(grade) + '年生: 全 ' + str(len(self.kanji_by_grade_list[grade])) + ' 文字')
 
     # ファイル形式をチェックする.
     def check_file_format(self, fmt_err_msg):
@@ -315,6 +340,9 @@ class KanjiWorkSheet:
 
         # 問題文が漢字プリントに収まるか否かを確認する.
         self.check_print_fit()
+
+        # 学年毎の漢字を確認する.
+        self.check_kanji_by_grade()
 
         # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
         return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \
@@ -589,6 +617,55 @@ class KanjiWorkSheet:
         # 出題する問題が決まったため、最終更新日を更新する.
         self.kanji_worksheet = self.set_lastupdate_kanji_worksheet()
 
+    def get_answer_kanji_keyword(self):
+        target_kanji_list = []
+        p_answer_pos = self.worksheet.columns.get_loc(self.kAnswer)
+        target_kanji_answer = self.kanji_worksheet.iloc[self.kanji_worksheet_idx, p_answer_pos].values
+        # 1語ずつ配列に格納する
+        target_kanji_answer = target_kanji_answer.tolist()
+        for ans in target_kanji_answer:
+            target_kanji_list.append([char for char in ans])
+
+        # 多次元を1次元に変換
+        target_kanji_list = [item for sublist in target_kanji_list for item in sublist]
+        target_kanji_list = sorted(target_kanji_list)
+        target_kanji_list = list(set(target_kanji_list))
+        return target_kanji_list
+
+    def replace_kanji_with_ruby(self):
+        problem_list = [[] for _ in range(self.get_number_of_problem())]
+        p_problem_pos = self.worksheet.columns.get_loc(self.kProblem)
+        flg = False
+        rflg = False
+        rmflg = False
+        for statement, i in zip(self.kanji_worksheet.iloc[self.kanji_worksheet_idx, p_problem_pos], range(self.get_number_of_problem())):
+            for word in statement:
+                if word in self.answer_kanji_keyward:
+                    flg = True
+                else:
+                    if flg:
+                        if word == '>':
+                            rflg = False
+                            flg = False
+                        if rflg:
+                            problem_list[i].append(word)
+                        if word == '<':
+                            rflg = True
+                            rmflg = True
+                    else:
+                        problem_list[i].append(word)
+
+            problem_list[i] = ''.join(problem_list[i])
+
+            if rmflg:
+                self.print_info('答えの漢字が含まれているため、問題文を変更しました.')
+                self.print_info('Before: ' + self.kanji_worksheet.iloc[self.kanji_worksheet_idx[i], p_problem_pos])
+                self.print_info('After : ' + problem_list[i])
+
+            self.kanji_worksheet.iloc[self.kanji_worksheet_idx[i], p_problem_pos] = problem_list[i]
+            rmflg = False
+
+
     # 訓練モードの問題集を作成する.
     def create_train_kanji_worksheet(self):
         """訓練モードの問題集を作成する."""
@@ -598,17 +675,18 @@ class KanjiWorkSheet:
         # 間違えた問題のインデックスを取得する.
         self.list_x_idx = self.get_kanji_worksheet_index(self.kIncrctMk, days=0)
         # 昨日間違えた問題のインデックスを取得する.
-        self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk, days=1)
+        self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk,    days=1)
         # 一週間前に間違えた問題のインデックスを取得する.
-        self.list_w_idx = self.get_kanji_worksheet_index(self.kWeekMk, days=7-1)
+        self.list_w_idx = self.get_kanji_worksheet_index(self.kWeekMk,   days=7-1)
         # 一ヶ月前に間違えた問題のインデックスを取得する.
-        self.list_m_idx = self.get_kanji_worksheet_index(self.kMonthMk, days=7*4-7)
+        self.list_m_idx = self.get_kanji_worksheet_index(self.kMonthMk,  days=7*4-7)
 
         # まだ出題していない問題を抽出する.
-
         self.list_n_idx = self.get_kanji_worksheet_index(self.kNotMk)
+        np.random.shuffle(self.list_n_idx)
         # 既に出題し、正解している問題を候補に挙げる.
         self.list_o_idx = self.get_kanji_worksheet_index(self.kCrctMk, sort=True)
+        np.random.shuffle(self.list_o_idx)
 
         # 4つの問題を連結する.
         # 優先順位: 不正解 ＞ 次の日に出題 ＞ 一週間後に出題 ＞ 一ヶ月後に出題 ＞ 未出題 ＞ 正解
@@ -634,6 +712,12 @@ class KanjiWorkSheet:
                 # それでも足りない場合は、一日後や一週間後、一ヶ月後に出題する予定の未出題の問題を選択することもできるが、
                 # レアケースのため、出題数を削ることで対応する。
                 self.set_number_of_problem(len(self.kanji_worksheet_idx))
+
+        # 問題の答えに含まれている漢字を取得する.
+        self.answer_kanji_keyward = self.get_answer_kanji_keyword()
+
+        # 問題文に答えが記載されている場合は、その漢字をルビに置き換える.
+        self.replace_kanji_with_ruby()
 
         # ランダムに並び替える.
         np.random.shuffle(self.kanji_worksheet_idx)
