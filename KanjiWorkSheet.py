@@ -85,6 +85,7 @@ class KanjiWorkSheet:
 
         # 漢字マスタの読み込み.
         self.kanji_by_grade_list = [[] for _ in range(6)]
+        self.answer_kanji_keyward = []
 
     def check_kanji_by_grade(self):
         grade_old = []
@@ -614,13 +615,18 @@ class KanjiWorkSheet:
         # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
         self.set_number_of_problem(len(self.kanji_worksheet_idx))
 
+        # 問題の答えに含まれている漢字を取得する.
+        self.get_answer_kanji_keyword()
+
+        # 問題文に答えが記載されている場合は、その漢字をルビに置き換える.
+        self.replace_kanji_with_ruby()
+
         # 出題する問題が決まったため、最終更新日を更新する.
         self.kanji_worksheet = self.set_lastupdate_kanji_worksheet()
 
     def get_answer_kanji_keyword(self):
         target_kanji_list = []
-        p_answer_pos = self.worksheet.columns.get_loc(self.kAnswer)
-        target_kanji_answer = self.kanji_worksheet.iloc[self.kanji_worksheet_idx, p_answer_pos].values
+        target_kanji_answer = self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kAnswer].values
         # 1語ずつ配列に格納する
         target_kanji_answer = target_kanji_answer.tolist()
         for ans in target_kanji_answer:
@@ -630,18 +636,20 @@ class KanjiWorkSheet:
         target_kanji_list = [item for sublist in target_kanji_list for item in sublist]
         target_kanji_list = sorted(target_kanji_list)
         target_kanji_list = list(set(target_kanji_list))
-        return target_kanji_list
+
+        self.answer_kanji_keyward = target_kanji_list
 
     def replace_kanji_with_ruby(self):
         problem_list = [[] for _ in range(self.get_number_of_problem())]
-        p_problem_pos = self.worksheet.columns.get_loc(self.kProblem)
         flg = False
         rflg = False
         rmflg = False
-        for statement, i in zip(self.kanji_worksheet.iloc[self.kanji_worksheet_idx, p_problem_pos], range(self.get_number_of_problem())):
+        kanji_o = ''
+        for statement, i in zip(self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem], range(self.get_number_of_problem())):
             for word in statement:
                 if word in self.answer_kanji_keyward:
                     flg = True
+                    kanji_o = word
                 else:
                     if flg:
                         if word == '>':
@@ -652,6 +660,11 @@ class KanjiWorkSheet:
                         if word == '<':
                             rflg = True
                             rmflg = True
+                        if not rflg and word != '>':
+                            rflg = False
+                            flg = False
+                            problem_list[i].append(kanji_o)
+                            problem_list[i].append(word)
                     else:
                         problem_list[i].append(word)
 
@@ -659,10 +672,10 @@ class KanjiWorkSheet:
 
             if rmflg:
                 self.print_info('答えの漢字が含まれているため、問題文を変更しました.')
-                self.print_info('Before: ' + self.kanji_worksheet.iloc[self.kanji_worksheet_idx[i], p_problem_pos])
+                self.print_info('Before: ' + self.kanji_worksheet.loc[self.kanji_worksheet_idx[i], self.kProblem])
                 self.print_info('After : ' + problem_list[i])
 
-            self.kanji_worksheet.iloc[self.kanji_worksheet_idx[i], p_problem_pos] = problem_list[i]
+            self.kanji_worksheet.loc[self.kanji_worksheet_idx[i], self.kProblem] = problem_list[i]
             rmflg = False
 
 
@@ -714,7 +727,7 @@ class KanjiWorkSheet:
                 self.set_number_of_problem(len(self.kanji_worksheet_idx))
 
         # 問題の答えに含まれている漢字を取得する.
-        self.answer_kanji_keyward = self.get_answer_kanji_keyword()
+        self.get_answer_kanji_keyword()
 
         # 問題文に答えが記載されている場合は、その漢字をルビに置き換える.
         self.replace_kanji_with_ruby()
@@ -744,6 +757,12 @@ class KanjiWorkSheet:
 
         # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
         self.set_number_of_problem(len(self.kanji_worksheet_idx))
+
+        # 問題の答えに含まれている漢字を取得する.
+        self.get_answer_kanji_keyword()
+
+        # 問題文に答えが記載されている場合は、その漢字をルビに置き換える.
+        self.replace_kanji_with_ruby()
 
         # ランダムに並び替える.
         np.random.shuffle(self.kanji_worksheet_idx)
