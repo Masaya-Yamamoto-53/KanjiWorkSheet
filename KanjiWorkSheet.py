@@ -86,6 +86,9 @@ class KanjiWorkSheet:
         self.kanji_by_grade_list = [[] for _ in range(6)]
         self.answer_kanji_keyword = []
 
+    def is_kanji(self, char):
+        return '\u4e00' <= char <= '\u9faf'
+
     def check_kanji_by_grade(self):
         grade_old = []
         for grade in range(1, 6+1):
@@ -638,54 +641,35 @@ class KanjiWorkSheet:
 
         self.answer_kanji_keyword = target_kanji_problem_list
 
-    def get_problem_kanji_idiom(self):
-        kanji_pattern = r'[\u4e00-\u9faf]+'
-        target_kanji_problem_list = []
-        target_kanji_problem = self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem].values
-        for statement in target_kanji_problem:
-            statement = re.sub(r'<[^>]*>', '', statement)
-            target_kanji_problem_list.append(re.findall(kanji_pattern, statement))
-
     def replace_kanji_with_ruby(self):
-        problem_list = [[] for _ in range(self.get_number_of_problem())]
+        kanji_cnt = 0
         flg = False
-        rflg = False
-        rmflg = False
-        kanji_o = ''
+        problem_statement_list = ['' for _ in range(self.get_number_of_problem())]
         for statement, i in zip(self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
                               , range(self.get_number_of_problem())):
             for word in statement:
-                if word in self.answer_kanji_keyword:
-                    flg = True
-                    kanji_o = word
-                else:
+                if self.is_kanji(word):
+                    kanji_cnt = kanji_cnt + 1
+                    problem_statement_list[i] = problem_statement_list[i] + word
+                    if word in self.answer_kanji_keyword:
+                        flg = True
+                elif word == '<':
                     if flg:
-                        if word == '>':
-                            rflg = False
-                            flg = False
-                        if rflg:
-                            problem_list[i].append(word)
-                        if word == '<':
-                            rflg = True
-                            rmflg = True
-                        if not rflg and word != '>':
-                            rflg = False
-                            flg = False
-                            problem_list[i].append(kanji_o)
-                            problem_list[i].append(word)
+                        problem_statement_list[i] = problem_statement_list[i][:-1 * kanji_cnt]
                     else:
-                        problem_list[i].append(word)
+                        problem_statement_list[i] = problem_statement_list[i] + word
+                    kanji_cnt = 0
+                elif word == '>':
+                    if flg:
+                        flg = False
+                    else:
+                        problem_statement_list[i] = problem_statement_list[i] + word
+                else:
+                    problem_statement_list[i] = problem_statement_list[i] + word
 
-            problem_list[i] = ''.join(problem_list[i])
-
-            if rmflg:
-                self.print_info('答えの漢字が含まれているため、問題文を変更しました.')
-                self.print_info('Before: ' + self.kanji_worksheet.loc[self.kanji_worksheet_idx[i], self.kProblem])
-                self.print_info('After : ' + problem_list[i])
-
-            self.kanji_worksheet.loc[self.kanji_worksheet_idx[i], self.kProblem] = problem_list[i]
-            rmflg = False
-
+            if statement != problem_statement_list[i]:
+                self.print_info('Before: ' + statement)
+                self.print_info('After : ' + problem_statement_list[i])
 
     # 訓練モードの問題集を作成する.
     def create_train_kanji_worksheet(self):
@@ -736,9 +720,6 @@ class KanjiWorkSheet:
 
         # 問題の答えに含まれている漢字を取得する.
         self.get_answer_kanji_keyword()
-
-        # 問題分から熟語を取得する.
-        self.get_problem_kanji_idiom()
 
         # 問題文に答えが記載されている場合は、その漢字をルビに置き換える.
         self.replace_kanji_with_ruby()
