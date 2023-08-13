@@ -5,7 +5,6 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 import os
 import re
-import csv
 import datetime as datetime
 import pandas as pd
 import numpy as np
@@ -85,7 +84,7 @@ class KanjiWorkSheet:
 
         # 漢字マスタの読み込み.
         self.kanji_by_grade_list = [[] for _ in range(6)]
-        self.answer_kanji_keyward = []
+        self.answer_kanji_keyword = []
 
     def check_kanji_by_grade(self):
         grade_old = []
@@ -625,19 +624,27 @@ class KanjiWorkSheet:
         self.kanji_worksheet = self.set_lastupdate_kanji_worksheet()
 
     def get_answer_kanji_keyword(self):
-        target_kanji_list = []
+        target_kanji_problem_list = []
         target_kanji_answer = self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kAnswer].values
         # 1語ずつ配列に格納する
         target_kanji_answer = target_kanji_answer.tolist()
         for ans in target_kanji_answer:
-            target_kanji_list.append([char for char in ans])
+            target_kanji_problem_list.append([char for char in ans])
 
         # 多次元を1次元に変換
-        target_kanji_list = [item for sublist in target_kanji_list for item in sublist]
-        target_kanji_list = sorted(target_kanji_list)
-        target_kanji_list = list(set(target_kanji_list))
+        target_kanji_problem_list = [item for sublist in target_kanji_problem_list for item in sublist]
+        target_kanji_problem_list = sorted(target_kanji_problem_list)
+        target_kanji_problem_list = list(set(target_kanji_problem_list))
 
-        self.answer_kanji_keyward = target_kanji_list
+        self.answer_kanji_keyword = target_kanji_problem_list
+
+    def get_problem_kanji_idiom(self):
+        kanji_pattern = r'[\u4e00-\u9faf]+'
+        target_kanji_problem_list = []
+        target_kanji_problem = self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem].values
+        for statement in target_kanji_problem:
+            statement = re.sub(r'<[^>]*>', '', statement)
+            target_kanji_problem_list.append(re.findall(kanji_pattern, statement))
 
     def replace_kanji_with_ruby(self):
         problem_list = [[] for _ in range(self.get_number_of_problem())]
@@ -645,9 +652,10 @@ class KanjiWorkSheet:
         rflg = False
         rmflg = False
         kanji_o = ''
-        for statement, i in zip(self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem], range(self.get_number_of_problem())):
+        for statement, i in zip(self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
+                              , range(self.get_number_of_problem())):
             for word in statement:
-                if word in self.answer_kanji_keyward:
+                if word in self.answer_kanji_keyword:
                     flg = True
                     kanji_o = word
                 else:
@@ -688,11 +696,11 @@ class KanjiWorkSheet:
         # 間違えた問題のインデックスを取得する.
         self.list_x_idx = self.get_kanji_worksheet_index(self.kIncrctMk, days=0)
         # 昨日間違えた問題のインデックスを取得する.
-        self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk,    days=1)
+        self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk, days=1)
         # 一週間前に間違えた問題のインデックスを取得する.
-        self.list_w_idx = self.get_kanji_worksheet_index(self.kWeekMk,   days=7-1)
+        self.list_w_idx = self.get_kanji_worksheet_index(self.kWeekMk, days=7-1)
         # 一ヶ月前に間違えた問題のインデックスを取得する.
-        self.list_m_idx = self.get_kanji_worksheet_index(self.kMonthMk,  days=7*4-7)
+        self.list_m_idx = self.get_kanji_worksheet_index(self.kMonthMk, days=7*4-7)
 
         # まだ出題していない問題を抽出する.
         self.list_n_idx = self.get_kanji_worksheet_index(self.kNotMk)
@@ -728,6 +736,9 @@ class KanjiWorkSheet:
 
         # 問題の答えに含まれている漢字を取得する.
         self.get_answer_kanji_keyword()
+
+        # 問題分から熟語を取得する.
+        self.get_problem_kanji_idiom()
 
         # 問題文に答えが記載されている場合は、その漢字をルビに置き換える.
         self.replace_kanji_with_ruby()

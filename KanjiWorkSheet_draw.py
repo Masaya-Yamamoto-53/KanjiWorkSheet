@@ -47,6 +47,9 @@ class KanjiWorkSheet_draw:
         self.problem_start_pos = 650  # 問題枠の開始位置
         self.problem_text_frame = []  # 問題枠
 
+    def is_kanji(self, char):
+        return '\u4e00' <= char <= '\u9faf'
+
     def set_page(self, path):
         self.page = canvas.Canvas(path, pagesize=landscape(A4))  # PDF設定
 
@@ -215,6 +218,7 @@ class KanjiWorkSheet_draw:
         rflg = 0
         fflg = 0
         arr = []
+        kanji = ""
         y_pos = y_pos_const
         rect_size = 50
 
@@ -239,9 +243,10 @@ class KanjiWorkSheet_draw:
                 # <>の内容を格納し終えた。
                 if word == u'>':
                     if not chk:
-                        self.draw_ruby(self.problem_text_frame[idx], y_pos, arr)
+                        self.draw_ruby(self.problem_text_frame[idx], y_pos, kanji, arr)
                     rflg = 0
                     arr = []
+                    kanji = ""
                 else:
                     arr.append(word)  # ルビの文字列をarrに格納する。
             # 問題枠の開始
@@ -262,7 +267,12 @@ class KanjiWorkSheet_draw:
                     y_pos = y_pos - font_size - rect_size / 10 * 8
                     pflg = 0
                 if not chk:
-                        y_pos = self.draw_string(self.problem_text_frame[idx], y_pos, font_size, word)
+                    y_pos = self.draw_string(self.problem_text_frame[idx], y_pos, font_size, word)
+
+                if self.is_kanji(word):
+                    kanji = kanji + word
+                else:
+                    kanji = ""
 
             count = count + 1
 
@@ -303,12 +313,18 @@ class KanjiWorkSheet_draw:
 
         return y_pos
 
-    def draw_ruby(self, x_pos, y_pos, string=u''):
+    def draw_ruby(self, x_pos, y_pos, kanji, string=u''):
         """漢字プリントの出題の漢字にルビを書く."""
         # 直前の漢字の右隣にルビを振るため, 1文字分だけ移動する.
         x_pos = x_pos + self.kProbFontSize
-        # 直前の漢字にルビを振るため, 1文字分だけ移動する.
-        y_pos = y_pos + self.kProbFontSize
+
+        # 直前の漢字にルビを振るため, 文字分だけ移動する.
+        if   len(kanji) == 1:
+            y_pos = y_pos + self.kProbFontSize
+        elif len(kanji) == 2:
+            y_pos = y_pos + self.kProbFontSize * 1.5
+        elif len(kanji) == 3:
+            y_pos = y_pos + self.kProbFontSize * 2.0
 
         # ルビの文字サイズを問題文の 1/3 にする.
         font_size = self.kProbFontSize / 3
@@ -327,6 +343,16 @@ class KanjiWorkSheet_draw:
         else:
             y_start_offset = self.kProbFontSize / 4 * 3  # ルビ描写開始オフセット(文字数によって開始位置をずらす)
             y_pos_offset   = self.kProbFontSize / 3      # ルビが 4文字 以外のとき
+
+        if   len(kanji) == 1:
+            y_start_offset = y_start_offset
+            y_pos_offset = y_pos_offset
+        elif len(kanji) == 2:
+            y_start_offset = y_start_offset * 1.3
+            y_pos_offset = y_pos_offset * 1.3
+        elif len(kanji) == 3:
+            y_start_offset = y_start_offset * 1.6
+            y_pos_offset = y_pos_offset * 1.6
 
         # ルビを記述する.
         for word in string:
