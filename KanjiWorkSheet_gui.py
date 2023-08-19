@@ -1588,7 +1588,7 @@ class KanjiWorkSheet_gui:
                 ################################################################################
                 # 漢字プリントをPFDで作成する.
                 self.path_of_worksheet = self.get_kanji_worksheet_path()
-                self.KanjiWorkSheet.print_kanji_worksheet(self.path_of_worksheet)
+                self.KanjiWorkSheet.generate_pdf_kanji_worksheet(self.path_of_worksheet)
                 ################################################################################
 
                 # 採点を更新する.
