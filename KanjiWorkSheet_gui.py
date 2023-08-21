@@ -1119,32 +1119,32 @@ class KanjiWorkSheet_gui:
             self.delete_report_wknum_entry(key)
             self.delete_report_mtnum_entry(key)
 
-            tolnum = self.KanjiWorkSheet.get_number_of_problem_with_grade(grade)
+            tolnum = len(self.KanjiWorkSheet.get_problem_with_grade(grade))
             self.insert_report_tolnum_entry(key, str(tolnum))
 
-            outnum = self.KanjiWorkSheet.get_number_of_problem_with_grade(grade) \
-                   - self.KanjiWorkSheet.get_number_of_problem_with_status(grade, self.KanjiWorkSheet.kNotMk)
+            outnum = len(self.KanjiWorkSheet.get_problem_with_grade(grade)) \
+                   - len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kNotMk))
 
             msg = self.insert_fluc_msg(diff, outnum_old, outnum)
             self.insert_report_outnum_entry(key, msg)
 
-            crctnum = self.KanjiWorkSheet.get_number_of_problem_with_status(grade, self.KanjiWorkSheet.kCrctMk)
+            crctnum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kCrctMk))
             msg = self.insert_fluc_msg(diff, crctnum_old, crctnum)
             self.insert_report_crctnum_entry(key, msg)
 
-            inctnum = self.KanjiWorkSheet.get_number_of_problem_with_status(grade, self.KanjiWorkSheet.kIncrctMk)
+            inctnum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kIncrctMk))
             msg = self.insert_fluc_msg(diff, inctnum_old, inctnum)
             self.insert_report_inctnum_entry(key, msg)
 
-            daynum = self.KanjiWorkSheet.get_number_of_problem_with_status(grade, self.KanjiWorkSheet.kDayMk)
+            daynum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kDayMk))
             msg = self.insert_fluc_msg(diff, daynum_old, daynum)
             self.insert_report_daynum_entry(key, msg)
 
-            wknum = self.KanjiWorkSheet.get_number_of_problem_with_status(grade, self.KanjiWorkSheet.kWeekMk)
+            wknum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kWeekMk))
             msg = self.insert_fluc_msg(diff, wknum_old, wknum)
             self.insert_report_wknum_entry(key, msg)
 
-            mtnum = self.KanjiWorkSheet.get_number_of_problem_with_status(grade, self.KanjiWorkSheet.kMonthMk)
+            mtnum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kMonthMk))
             msg = self.insert_fluc_msg(diff, mtnum_old, mtnum)
             self.insert_report_mtnum_entry(key, msg)
 

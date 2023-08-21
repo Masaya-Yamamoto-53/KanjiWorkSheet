@@ -31,7 +31,6 @@ class KanjiWorkSheet:
             , '最終更新日'
             , '結果'
             , '履歴'
-            , '結果の履歴'
         ]
 
         self.kGrade = self.kFileColumns[0]
@@ -43,7 +42,6 @@ class KanjiWorkSheet:
         self.kLastUpdate = self.kFileColumns[5]
         self.kResult = self.kFileColumns[6]
         self.kHistory = self.kFileColumns[7]
-        self.kHistRlt = self.kFileColumns[8]
 
         # 漢字テストの結果
         self.kNotMk = '-'
@@ -64,12 +62,12 @@ class KanjiWorkSheet:
         ]
 
         # 問題集
-        self.path_of_worksheet = ''  # 問題集のパス
+        self.path_of_worksheet = ''      # 問題集のパス
         self.worksheet = pd.DataFrame()  # 問題集のデータを保持するデータフレーム
 
         # 漢字プリント
         self.kanji_worksheet = pd.DataFrame()  # 漢字プリントのデータを保持するデータフレーム
-        self.kanji_worksheet_idx = []  # 漢字プリントに出題する問題集のインデックスのリスト
+        self.kanji_worksheet_idx = []          # 漢字プリントに出題する問題集のインデックスのリスト
         self.list_x_idx = []
         self.list_d_idx = []
         self.list_w_idx = []
@@ -79,7 +77,7 @@ class KanjiWorkSheet:
         self.create_date = ''  # 作成日
 
         self.student_name = ''  # 出題対象者(生徒名)
-        self.grade = []  # 出題範囲指定(学年)
+        self.grade = []         # 出題範囲指定(学年)
 
         self.kMDRW = 0  # 復習モード
         self.kMDTR = 1  # 練習モード
@@ -91,14 +89,18 @@ class KanjiWorkSheet:
         self.kanji_by_grade_list = [[] for _ in range(self.kGradeRange[1] + 1)]
         self.answer_kanji_keyword = []
 
-    def check_kanji_by_grade(self):
-        grade_old = []
+    # 問題集から学年に対応する漢字をリスト化する.
+    def create_list_kanji_by_grade(self):
+        """問題集から学年に対応する漢字をリスト化する."""
+        # このリストは不必要なルビを削除するための判断材料として使用する.
+        grade_old = []  # 今までの漢字を格納するリスト
         for grade in range(self.kGradeRange[0], self.kGradeRange[1] + 1):
-            # 学年に該当するDataFrameを抽出する.
-            worksheet = self.worksheet[self.worksheet[self.kGrade] == grade]
+            # 学年に該当するデータを抽出する.
+            worksheet = self.get_problem_with_grade(self.grade)
+            # 抽出したデータが存在する場合
             if len(worksheet) > 0:
+                # 1語ずつ配列に格納する
                 for ans in worksheet[self.kAnswer]:
-                    # 1語ずつ配列に格納する
                     self.kanji_by_grade_list[grade].append([char for char in ans])
 
                 # 多次元を1次元に変換
@@ -112,6 +114,7 @@ class KanjiWorkSheet:
                 # 現在の学年の漢字だけを残すため、それ以降の漢字を記憶しておく.
                 grade_old = grade_old + self.kanji_by_grade_list[grade]
 
+                # 学年毎に習う漢字数を表示する.
                 self.print_info('小学' + str(grade) + '年生: 全 ' + str(len(self.kanji_by_grade_list[grade])) + ' 文字')
 
     # ファイル形式をチェックする.
@@ -407,7 +410,7 @@ class KanjiWorkSheet:
         self.replace_nan_char_with_space()
 
         # 学年毎の漢字を確認する.
-        self.check_kanji_by_grade()
+        self.create_list_kanji_by_grade()
 
         # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
         return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \
@@ -717,7 +720,8 @@ class KanjiWorkSheet:
         # 指定した学年のみ抽出する.
         if len(self.grade) > 0:
             num = len(self.kanji_worksheet)
-            self.kanji_worksheet = self.kanji_worksheet[self.kanji_worksheet[self.kGrade].isin(self.grade)]
+            self.kanji_worksheet = self.get_problem_with_grade(self.grade)
+
             self.print_info('学年は ' + str(self.grade) + ' 年')
             self.print_info('問題集の問題数は ' + str(num) + ' から ' + str(len(self.kanji_worksheet)) + ' に変更.')
         else:
@@ -747,7 +751,7 @@ class KanjiWorkSheet:
         self.create_date = pd.to_datetime(datetime.datetime.today())
 
         # モードの設定にあった問題を選択する.
-        if self.mode == self.kMDRW:  # 復習モード
+        if   self.mode == self.kMDRW:  # 復習モード
             self.create_review_mode_kanji_worksheet()
         elif self.mode == self.kMDWK:  # 苦手モード
             self.create_weakness_mode_kanji_worksheet()
@@ -905,9 +909,9 @@ class KanjiWorkSheet:
 
                 # 整合を確認
                 # '答え', '番号', '管理番号'を比較
-                if (self.worksheet.loc[idx, self.kAnswer] == logs.loc[idx, self.kAnswer]) \
-                        and (self.worksheet.loc[idx, self.kNumber] == logs.loc[idx, self.kNumber]) \
-                        and (self.worksheet.loc[idx, self.kAdminNumber] == logs.loc[idx, self.kAdminNumber]):
+                if  (self.worksheet.loc[idx, self.kAnswer] == logs.loc[idx, self.kAnswer]) \
+                and (self.worksheet.loc[idx, self.kNumber] == logs.loc[idx, self.kNumber]) \
+                and (self.worksheet.loc[idx, self.kAdminNumber] == logs.loc[idx, self.kAdminNumber]):
 
                     # [結果]列を更新する.
                     # 【凡例】
@@ -918,16 +922,18 @@ class KanjiWorkSheet:
                     #   w: self.kWeekMk  : 1週間後に実施(前回dで今回oの時)
                     #   m: self.kMonthMk : 1ヶ月後に実施(前回wで今回oの時)
 
+                    # 今回, 正解した場合.
                     if new == self.kCrctMk:
-                        if old == self.kIncrctMk:  # x -> d
+                        if   old == self.kIncrctMk:  # x -> d
                             key = self.kDayMk
-                        elif old == self.kDayMk:  # d -> w
+                        elif old == self.kDayMk:   # d -> w
                             key = self.kWeekMk
                         elif old == self.kWeekMk:  # w -> m
                             key = self.kMonthMk
-                        else:  # m -> o or - -> o
+                        else:                      # m -> o or - -> o
                             key = self.kCrctMk
-                    else:  # x
+                    # 今回, 不正解の場合
+                    else:                          # x
                         key = self.kIncrctMk
 
                     # 最終更新日を更新
@@ -935,8 +941,7 @@ class KanjiWorkSheet:
                     # 結果を反映する.
                     self.worksheet.loc[idx, self.kResult] = key
                     # 履歴を更新する.
-                    hist = self.worksheet.loc[idx, self.kHistory] + new
-                    self.worksheet.loc[idx, self.kHistory] = hist
+                    self.worksheet.loc[idx, self.kHistory] = self.worksheet.loc[idx, self.kHistory] + new
                     # 各結果の回数をカウントする.
                     result_dict[key] += 1
                 else:
@@ -967,7 +972,7 @@ class KanjiWorkSheet:
         """
         # 漢字プリントを作成する.
         draw = KanjiWorkSheet_draw(
-            path
+              path
             , self.get_student_name()
             , self.get_grade()
             , self.get_create_date()
@@ -1005,30 +1010,28 @@ class KanjiWorkSheet:
 
         return len(opn_err_msg), opn_err_msg, status_list
 
-    # 問題集から指定したステータスに該当する問題数を取得する.
-    def get_number_of_problem_with_status(self, grade, status):
+    # 問題集から指定したステータスに該当する問題を取得する.
+    def get_problem_with_status(self, grade, status):
         """
         :param grade: 学年
         :type grade: list
         :param status: 採点結果
         :type status: string
 
-        問題集から指定したステータスに該当する問題数を取得する.
+        問題集から指定したステータスに該当する問題を取得する.
         """
-        # 指定した複数の学年に対応した問題文を抽出し、さらに、対応するステータスに絞り、その数を返す.対応するステータスに絞り、その数を返す.
-        tmp = self.worksheet[self.worksheet[self.kGrade].isin(grade)]
-        return len(tmp[tmp[self.kResult] == status])
+        tmp = self.get_problem_with_grade(grade)
+        return tmp[tmp[self.kResult] == status]
 
-    # 問題集から指定した学年の問題数を取得する.
-    def get_number_of_problem_with_grade(self, grade):
+    # 問題集から指定した学年の問題を取得する.
+    def get_problem_with_grade(self, grade):
         """
         :param grade: 学年
         :type grade: list
 
-        問題集から指定した学年の問題の総数を取得する.
+        問題集から指定した学年の問題を取得する.
         """
-        # 指定した複数の学年に対応した問題文を抽出し、その数を返す.
-        return len(self.worksheet[self.worksheet[self.kGrade].isin(grade)])
+        return self.worksheet[self.worksheet[self.kGrade].isin(grade)]
 
     # デバッグ情報を標準出力する.
     def print_info(self, msg):
