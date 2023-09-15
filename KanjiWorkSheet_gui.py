@@ -1037,7 +1037,7 @@ class KanjiWorkSheet_gui:
             self.set_scoring_answer_button_display_value(key, None)
 
         # ログファイルから情報を取得し, 反映する.
-        (err_num, _, ans_list) = self.KanjiWorkSheet.get_kanji_worksheet_with_status(self.get_path_of_log(), self.KanjiWorkSheet.kAnswer)
+        (err_num, _, ans_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(self.get_path_of_log(), self.KanjiWorkSheet.kAnswer)
         if err_num == 0:
             # 答えを印字
             for ans, key in zip(ans_list, keys):
@@ -1047,7 +1047,7 @@ class KanjiWorkSheet_gui:
                     self.insert_scoring_answer_text(key, '\n')
                     self.disable_scoring_answer_text(key)
 
-        (err_num, _, result_list) = self.KanjiWorkSheet.get_kanji_worksheet_with_status(self.get_path_of_log(), self.KanjiWorkSheet.kResult)
+        (err_num, _, result_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(self.get_path_of_log(), self.KanjiWorkSheet.kResult)
         if err_num == 0:
             # 結果を反映
             for result, key in zip(result_list, keys):
@@ -1485,7 +1485,7 @@ class KanjiWorkSheet_gui:
                 , '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
         ]
         path = self.get_path_of_log()
-        (err, err_msg, ans_list) = self.KanjiWorkSheet.get_kanji_worksheet_with_status(path, self.KanjiWorkSheet.kAnswer)
+        (err, err_msg, ans_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(path, self.KanjiWorkSheet.kAnswer)
         # 何らかのエラーメッセージを取得した場合は, メッセージボックスで通知する.
         for msg in err_msg:
             tk.messagebox.showerror('Error', msg)

@@ -51,7 +51,10 @@ class KanjiWorkSheet_draw:
         self.kColNumMin = 10
 
         # 問題番号の下にオフセットする
-        self.kProblemStartOffset = 30  # 問題文の開始位置
+        self.kProblemStartOffset = 25  # 問題文の開始位置
+
+        # 問題の枠のサイズ
+        self.rect_size = 48
 
         self.problem_start_pos = 650  # 問題枠の開始位置
         self.problem_text_frame = []  # 問題枠
@@ -207,7 +210,6 @@ class KanjiWorkSheet_draw:
         arr = []
         kanji = ""
         y_pos = y_pos_const
-        rect_size = 50
         frame_num = 0
 
         count = 0
@@ -218,14 +220,14 @@ class KanjiWorkSheet_draw:
                 if word == u']':
                     # 問題枠が初回の場合
                     if fflg == 0:
-                        y_pos = y_pos - rect_size / 10 * 0.5
+                        y_pos = y_pos - self.rect_size / 10 * 0.5
                         fflg = 1
                     if not chk:
                         if len(arr) <= 0:
-                            self.draw_frame(self.problem_text_frame[idx] - rect_size / 3, y_pos, rect_size, 0, arr)
+                            self.draw_frame(self.problem_text_frame[idx] - self.rect_size / 3, y_pos, self.rect_size, 0, arr)
                             frame_num += 1
                         else:
-                            self.draw_frame(self.problem_text_frame[idx] - rect_size / 3, y_pos, rect_size, frame_num,
+                            self.draw_frame(self.problem_text_frame[idx] - self.rect_size / 3, y_pos, self.rect_size, frame_num,
                                             arr)
                             frame_num = 0
                     frame_stt = kFrameSttEnd
@@ -247,7 +249,7 @@ class KanjiWorkSheet_draw:
             elif word == u'[':
                 # 問題枠を印字した直後の場合は位置を調整する。
                 if frame_stt == kFrameSttEnd:
-                    y_pos = y_pos - rect_size
+                    y_pos = y_pos - self.rect_size
                 frame_stt = kFrameSttStart  # 問題枠の開始
             # ルビの開始
             elif word == u'<':
@@ -258,7 +260,7 @@ class KanjiWorkSheet_draw:
                 font_size = self.kProbFontSize
                 # 問題枠を印字した直後の場合は位置を調整する。
                 if frame_stt == kFrameSttEnd:
-                    y_pos = y_pos - font_size - rect_size / 10 * 8
+                    y_pos = y_pos - font_size - self.rect_size / 10 * 8
                     frame_stt = kFrameSttInit
                 if not chk:
                     y_pos = self.draw_string(self.problem_text_frame[idx], y_pos, font_size, word)

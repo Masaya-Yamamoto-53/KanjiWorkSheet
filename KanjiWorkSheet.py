@@ -650,72 +650,8 @@ class KanjiWorkSheet:
                 self.print_info('After : ' + problem_statement_list[i])
                 self.kanji_worksheet.loc[idx, self.kProblem] = problem_statement_list[i]
 
-    # 答えの漢字が重複しているインデックスを作成する.
-    def find_duplicate_index(self, ans_list):
-        index_map = {}
-        result_dict = {}
-
-        for i, phrase in enumerate(ans_list):
-            for char in phrase:
-                if char in index_map:
-                    index_map[char].append(i)
-                else:
-                    index_map[char] = [i]
-
-        for char, index in index_map.items():
-            if len(index) > 1:
-                result_dict[char] = index
-
-        # 一番上の学年用の漢字以外は重複しても良いことにする。
-        keys_to_keep = self.get_list_kanji_by_grade(max(self.get_grade()))
-        keys_to_remove = [key for key in result_dict.keys() if key not in keys_to_keep]
-        for key in keys_to_remove:
-            result_dict.pop(key)
-
-        return result_dict
-
-    def remove_values(self, list, values_to_remove):
-        return [value for value in list if value not in values_to_remove]
-
-    def remove_value(self, list, list_duplicate_dict):
-        print(list_duplicate_dict)
-
-        # 答えに同じ漢字が内容に重複しているものを取り除く
-        first_idx = []  # 重複を取り除いた結果
-        exclution_list = []  # 除外リスト
-        for list_value in list_duplicate_dict.values():
-            list_value = set(list_value)
-            list_value = self.remove_values(list_value, exclution_list)
-
-            # 問題の答えが重複している場合は先頭のインデックスだけ取り除く
-            if len(list_value) > 0:
-                first_idx.append(list_value[0])
-
-            # 除外リストを更新
-            exclution_list = exclution_list + [value for value in list_value]
-
-        # 重複しているリストを一次元にする。
-        duplicate = []
-        for list_value in list_duplicate_dict.values():
-            for value in list_value:
-                duplicate.append(value)
-
-        # 除外したいものだけ残す。
-        duplicate = self.remove_values(duplicate, first_idx)
-
-        print('first index:', first_idx)
-
-        print(list)
-        duplicate = sorted(set(duplicate))
-        duplicate = list[duplicate]  # 除外したい問題のインデックスを得る。
-        print(((duplicate)))
-        # 漢字の問題が被っていない問題のインデックスを取得する。
-        not_duplicate = self.remove_values(list, duplicate)
-
-        return not_duplicate, duplicate
-
     # 不要なルビを問題文から削除する.
-    def delete_ruby(self):
+    def remove_unnecessary_ruby(self):
         del_flg = False
         ruby_flg = False
         self.print_info('問題文中に不要なルビがあるため、削除しました.')
@@ -771,12 +707,127 @@ class KanjiWorkSheet:
 
         return tmp_list.index.values
 
+    def remove_values(self, list_value, exclusion_list):
+        return [value for value in list_value if value not in exclusion_list]
+
+    def remove_duplicates_kanji_problem_index(self, kanji_worksheet_idx, duplicate_dict):
+        # 例)
+        # 雨 [0, 2, 5, 8]
+        # 右 [1, 3]
+        # 一 [4, 6]
+        # 円 [6, 7]
+
+        # [0]: 0を選んだため、2, 5, 8 は除外
+        # [1]: 1を選んだため、3は除外
+        # [4]: 4を選んだため、6は除外
+        # [7]: 6を除外したため、7を選択
+
+        # 答えに同じ漢字が内容に重複しているものを取り除く
+        first_idx = []       # 重複を取り除いた結果
+        exclusion_list = []  # 除外リスト
+        for list_value in duplicate_dict.values():
+            list_value = set(list_value)
+            list_value = self.remove_values(list_value, exclusion_list)
+
+            # 問題の答えが重複している場合は先頭のインデックスだけ取り除く
+            if len(list_value) > 0:
+                first_idx.append(list_value[0])
+
+            # 除外リストを更新
+            exclusion_list = exclusion_list + [value for value in list_value]
+
+        # 重複しているリストを一次元にする。
+        duplicate = []
+        for list_value in duplicate_dict.values():
+            for value in list_value:
+                duplicate.append(value)
+
+        # 除外したいものだけ残す。
+        duplicate = self.remove_values(duplicate, first_idx)
+        duplicate = sorted(set(duplicate))
+        duplicate = kanji_worksheet_idx[duplicate]  # 除外したい問題のインデックスを得る。
+
+        # 漢字の問題が被っていない問題のインデックスを取得する。
+        not_duplicate = self.remove_values(kanji_worksheet_idx, duplicate)
+
+        return not_duplicate, duplicate
+
+    # 答えの漢字が重複しているインデックスを作成する.
+    def create_duplicate_kanji_index_dict(self, ans_list):
+        index_map = {}
+        result_dict = {}
+
+        print(ans_list.index)
+
+        # この要素数はself.kanji_worksheetのインデックスとは違う.
+        # 答えのリストと、その要素数を格納する。
+        for i, phrase in enumerate(ans_list):
+            # 答えの熟語を分解する.
+            for char in phrase:
+                if char in index_map:
+                    # キーが存在するとき.
+                    index_map[char].append(i)
+                else:
+                    # キーが存在しないとき.
+                    index_map[char] = [i]
+
+        for char, index in index_map.items():
+            # インデックスが複数あるもののみ対象とする.
+            # 複数ない場合は重複していないため.
+            if len(index) > 1:
+                result_dict[char] = index
+
+        # 例)
+        # 右 [0, 4, 8, 15, 19]
+        # 円 [1, 5, 7, 14, 18]
+        # 一 [2, 3, 6, 11, 13, 17]
+        # 雨 [9, 12]
+        # 王 [10, 16, 20]
+        # 音 [21, 26]
+        # 花 [22, 25]
+
+        # 本当は学年毎に問題を分けてユニークにしたい。
+        # この実装で対して問題にならないのであれば、このままとする.
+        # 一番上の学年用の漢字以外は重複しても良いことにする。
+        # keys_to_keep = self.get_list_kanji_by_grade(max(self.get_grade()))
+        # keys_to_remove = [key for key in result_dict.keys() if key not in keys_to_keep]
+        # for key in keys_to_remove:
+        #     result_dict.pop(key)
+
+        return result_dict
+
+    def remove_duplicates_kanji_problem(self, num, result, sort=False):
+        # 最終更新日の古い順にソートしたもの候補にする.
+        # 答えが重複している問題を除去することから、指定した問題数を確保するため、全て候補にする.
+        kanji_worksheet_idx = self.get_kanji_worksheet_index(result, sort=sort)
+
+        # 答えに重複がある問題についてはなるべく選択しないようにする.
+        # 問題集から答えの列を抽出する.
+        ans_list = self.kanji_worksheet.loc[kanji_worksheet_idx, self.kAnswer]
+        # 答えの漢字が重複しているインデックスを作成する.
+        # (漢字をキーにして、値をインデックスにした辞書を作成する.)
+        duplicate_dict = self.create_duplicate_kanji_index_dict(ans_list)
+        # 重複した問題のインデックスを削除する.
+        (list_not_duplicate, list_duplicate) = self.remove_duplicates_kanji_problem_index(kanji_worksheet_idx, duplicate_dict)
+
+        # 重複を削除した問題のインデックスを問題集だけ選出し、シャッフルする.
+        kanji_worksheet_idx = list_not_duplicate[0:num]
+        np.random.shuffle(kanji_worksheet_idx)
+
+        # 重複箇所を削ることによって、問題数が減ってしまうので、不足してしまった場合は、重複しても良いので選出する。
+        for value in list_duplicate:
+            kanji_worksheet_idx.append(value)
+        # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
+        kanji_worksheet_idx = kanji_worksheet_idx[0:num]
+
+        return kanji_worksheet_idx, len(kanji_worksheet_idx)
+
     # 選出した問題の最終更新日を更新する.
     def set_lastupdate_kanji_worksheet(self):
         # Excelで読み込んだ時に妙な解釈をされ、形式が壊れてしまうため、シングルクォートで囲っておく.
         now = "'" + str(pd.to_datetime(datetime.datetime.today())) + "'"
+        # 選出した問題の最終日を更新する.
         self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kLastUpdate] = now
-        self.kanji_worksheet = self.kanji_worksheet.loc[self.kanji_worksheet_idx, :]
 
         return self.kanji_worksheet
 
@@ -830,7 +881,7 @@ class KanjiWorkSheet:
             self.create_review_mode_kanji_worksheet()
         elif self.mode == self.kMDWK:  # 苦手モード
             self.create_weakness_mode_kanji_worksheet()
-        else:  # 練習モード
+        else:                          # 練習モード
             self.create_train_mode_kanji_worksheet()
 
         # 問題の答えに含まれている漢字を取得する.
@@ -838,12 +889,14 @@ class KanjiWorkSheet:
         # 問題文に答えが記載されている場合は、その漢字をルビに置き換える.
         self.replace_kanji_with_ruby()
         # 選択中の学年未満のルビを削除する.
-        self.delete_ruby()
+        self.remove_unnecessary_ruby()
 
         # ランダムに並び替える.
         np.random.shuffle(self.kanji_worksheet_idx)
         # 出題する問題が決まったため、最終更新日を更新する.
         self.kanji_worksheet = self.set_lastupdate_kanji_worksheet()
+        # 問題集を抽出した物だけにする.
+        self.kanji_worksheet = self.kanji_worksheet.loc[self.kanji_worksheet_idx, :]
 
         return len(err_msg) != 0, err_msg
 
@@ -852,34 +905,24 @@ class KanjiWorkSheet:
         """復習モードの漢字プリントを作成する."""
         self.print_info("Review Mode")
 
-        # 最終更新日で昇順にソートしたもの100件を候補にする.
-        # num件にすると、答えが同じ問題をピックアップする懸念があるため。
-        self.kanji_worksheet_idx = self.get_kanji_worksheet_index(self.kCrctMk, sort=True)[0:100]
+        # ○になっている問題を出題する.
+        # 最終更新日の古い順に並び替えて、その先頭から順に問題を選択する。
+        # ただし、答えに重複がある問題については選択しないようにする。
+        (list_o, num) = self.remove_duplicates_kanji_problem(self.get_number_of_problem(), self.kCrctMk, sort=True)
 
-        # 問題集から答えの列を抽出する.
-        ans_list = self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kAnswer]
-        # 答えの漢字が重複しているインデックスを作成する.
-        list_duplicate_dict = self.find_duplicate_index(ans_list)
-        list_not_duplicate, list_duplicate = self.remove_value(self.kanji_worksheet_idx, list_duplicate_dict)
-        self.kanji_worksheet_idx = list_not_duplicate[0:self.get_number_of_problem()]
-
-        # 最大100件をソートして0~num件を出題する.
-        np.random.shuffle(self.kanji_worksheet_idx)
-
-        # 重複箇所を削ることによって、問題数が減ってしまうのであれば重複しても良いので出題する。
-        for value in list_duplicate:
-            self.kanji_worksheet_idx.append(value)
-
-        # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
-        self.kanji_worksheet_idx = self.kanji_worksheet_idx[0:self.get_number_of_problem()]
-        self.set_number_of_problem(len(self.kanji_worksheet_idx))
+        if len(list_o) > 0:
+            self.kanji_worksheet_idx = list_o  # 漢字プリントに出題する問題集のインデックスのリストを更新する.
+            self.set_number_of_problem(num)    # 出題数を更新する.
+        else:
+            # 問題を選出できなかったとき、練習モードと同じにする.
+            self.create_train_mode_kanji_worksheet()
 
     # 訓練モードの漢字プリントを作成する.
     def create_train_mode_kanji_worksheet(self):
         """訓練モードの漢字プリントを作成する."""
         self.print_info("Train Mode")
 
-        # テスト問題を選定する
+        # テスト問題を選定する.
         # 間違えた問題のインデックスを取得する.
         self.list_x_idx = self.get_kanji_worksheet_index(self.kIncrctMk, days=0)
         # 昨日間違えた問題のインデックスを取得する.
@@ -889,15 +932,13 @@ class KanjiWorkSheet:
         # 一ヶ月前に間違えた問題のインデックスを取得する.
         self.list_m_idx = self.get_kanji_worksheet_index(self.kMonthMk, days=7 * 4 - 7)
 
-        # まだ出題していない問題を抽出する.
-        self.list_n_idx = self.get_kanji_worksheet_index(self.kNotMk)
-        np.random.shuffle(self.list_n_idx)
-        # 既に出題し、正解している問題を候補に挙げる.
-        self.list_o_idx = self.get_kanji_worksheet_index(self.kCrctMk, sort=True)
-
         # 4つの問題を連結する.
         # 優先順位: 不正解 ＞ 次の日に出題 ＞ 一週間後に出題 ＞ 一ヶ月後に出題 ＞ 未出題 ＞ 正解
-        self.kanji_worksheet_idx = np.concatenate([self.list_x_idx, self.list_d_idx, self.list_w_idx, self.list_m_idx])
+        self.kanji_worksheet_idx = np.concatenate([
+                  self.list_x_idx
+                , self.list_d_idx
+                , self.list_w_idx
+                , self.list_m_idx])
 
         num = self.get_number_of_problem() - len(self.kanji_worksheet_idx)
         if num <= 0:
@@ -906,20 +947,16 @@ class KanjiWorkSheet:
             self.kanji_worksheet_idx = self.kanji_worksheet_idx[0: self.get_number_of_problem()]
         else:
             # 間違えた問題だけでは不足している場合
-            # 残り必要な問題数を計算する.
-
-            list = self.kanji_worksheet.loc[self.list_n_idx, self.kAnswer]
-            list_duplicate_dict = self.find_duplicate_index(list[0:num*2])
-            (list_not_duplicate, _) = self.remove_value(self.list_n_idx[0:num*2], list_duplicate_dict)
-
-            self.kanji_worksheet_idx = np.concatenate([self.kanji_worksheet_idx, list_not_duplicate[0:num]])
+            # まだ出題していない問題を抽出する.
+            (self.list_n_idx, n_num) = self.remove_duplicates_kanji_problem(num, self.kNotMk, sort=False)
+            self.kanji_worksheet_idx = np.concatenate([self.kanji_worksheet_idx, self.list_n_idx[0:n_num]])
 
             # 未出題だけでは確保できなかった.
-            num = num - len(list_not_duplicate[0:num])
+            num = num - len(self.list_n_idx[0:n_num])
             if num > 0:
-                list_o = self.list_o_idx[0:100]
-                np.random.shuffle(list_o)
-                self.kanji_worksheet_idx = np.concatenate([self.kanji_worksheet_idx, list_o[0:num]])
+                # 既に出題し、正解している問題を候補に挙げる.
+                (self.list_o_idx, o_num) = self.remove_duplicates_kanji_problem(num, self.kCrctMk, sort=True)
+                self.kanji_worksheet_idx = np.concatenate([self.kanji_worksheet_idx, self.list_o_idx[0:o_num]])
 
                 # それでも足りない場合は、一日後や一週間後、一ヶ月後に出題する予定の未出題の問題を選択することもできるが、
                 # レアケースのため、出題数を削ることで対応する。
@@ -930,21 +967,23 @@ class KanjiWorkSheet:
         """苦手モードの漢字プリントを作成する."""
         self.print_info("Weakness Mode")
 
-        # テスト問題を選定する
-        # 毎日同じ時間帯に学習する場合は、昨日間違えた問題を出力することができないため、
-        # 2時間オフセットをいれる。
+        # テスト問題を選定する.
+        # 問題数を取得する.
         num = self.get_number_of_problem()
 
         # 既に出題し、正解している問題を候補に挙げる.
         list_o = self.get_kanji_worksheet_index(self.kCrctMk, sort=True)
 
-        # 間違えた問題を最優先で選ぶ。
-        hist = list_o[self.kHistory].str[-10:].str.count(self.kIncrctMk)
+        if len(list_o) > 0:
+            # 間違えた問題を最優先で選ぶ.
+            hist = list_o[self.kHistory].str[-10:].str.count(self.kIncrctMk)
+            self.kanji_worksheet_idx = hist.sort_values(ascending=False).head(num).index
 
-        self.kanji_worksheet_idx = hist.sort_values(ascending=False).head(num).index
-
-        # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
-        self.set_number_of_problem(len(self.kanji_worksheet_idx))
+            # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
+            self.set_number_of_problem(len(self.kanji_worksheet_idx))
+        else:
+            # 問題を選出できなかったとき、練習モードと同じにする.
+            self.create_train_mode_kanji_worksheet()
 
     # 漢字プリントの出題問題の概要を表示する.
     def report_kanji_worksheet(self):
@@ -976,7 +1015,7 @@ class KanjiWorkSheet:
         opn_err_msg = []
         fmt_err_msg = []
 
-        # ファイルが存在する.
+        # ログファイルが存在することを確認する.
         if os.path.exists(path):
             # 前回のテスト結果を読み込む.
             logs = pd.read_csv(path, sep=',', index_col=0, encoding='shift-jis')
@@ -997,9 +1036,10 @@ class KanjiWorkSheet:
             # ログファイルの入力がある時.
             if not pd.isnull(logs.loc[idx, self.kResult]):
                 old = self.worksheet.loc[idx, self.kResult]  # 以前の結果
-                new = logs.loc[idx, self.kResult]  # 今回の結果
+                new = logs.loc[idx, self.kResult]            # 今回の結果
 
                 # 整合を確認
+                # 問題集の問題を挿入したりするとインデックスがずれてしまい、上手く記録できないため、そのポカヨケとしてチェックする.
                 # '答え', '番号', '管理番号'を比較
                 if  (self.worksheet.loc[idx, self.kAnswer] == logs.loc[idx, self.kAnswer]) \
                 and (self.worksheet.loc[idx, self.kNumber] == logs.loc[idx, self.kNumber]) \
@@ -1018,14 +1058,14 @@ class KanjiWorkSheet:
                     if new == self.kCrctMk:
                         if   old == self.kIncrctMk:  # x -> d
                             key = self.kDayMk
-                        elif old == self.kDayMk:   # d -> w
+                        elif old == self.kDayMk:     # d -> w
                             key = self.kWeekMk
-                        elif old == self.kWeekMk:  # w -> m
+                        elif old == self.kWeekMk:    # w -> m
                             key = self.kMonthMk
-                        else:                      # m -> o or - -> o
+                        else:                        # m -> o or - -> o
                             key = self.kCrctMk
                     # 今回, 不正解の場合
-                    else:                          # x
+                    else:                            # x
                         key = self.kIncrctMk
 
                     # 最終更新日を更新
@@ -1039,6 +1079,7 @@ class KanjiWorkSheet:
                 else:
                     fmt_err_msg.append(self.print_error('ログファイルと問題集のインデックスが不一致です.'))
 
+        # ログに反映した数を算出する.
         total = sum(result_dict[key] for key in self.report_key_list)
 
         if len(logs) != total:
@@ -1075,28 +1116,32 @@ class KanjiWorkSheet:
         # PDFを作成する.
         draw.generate_pdf_kanji_worksheet()
 
-    # ログファイルから指定したステータスに該当するリストを取得する.
-    def get_kanji_worksheet_with_status(self, path, status):
+    # ログファイルから指定した列に該当するリストを取得する.
+    def get_column_kanji_worksheet_log(self, path, column_name):
         """
         :param path: ログファイル
         :type path: string
-        :param status: 採点結果
-        :type status: string
+        :param column_name: 採点結果
+        :type column_name: string
 
-        ログファイルから指定したステータスに該当するリストを取得する.
+        ログファイルから指定した列に該当するリストを取得する.
         """
         opn_err_msg = []
         status_list = []
+
+        # ログファイルが存在することを確認する.
         if os.path.exists(path):
+            # ログファイルが存在する場合は、読み込みを行う.
             logs = pd.read_csv(
-                path
+                  path
                 , sep=','
                 , index_col=0
                 , encoding='shift-jis'
             )
             self.print_info('ログファイル(' + path + ')を読み込みました.')
 
-            status_list = logs[status].values
+            # 採点結果
+            status_list = logs[column_name].values
         else:
             opn_err_msg.append(self.print_info('ログファイル(' + path + ')を読み込めませんでした.'))
 
