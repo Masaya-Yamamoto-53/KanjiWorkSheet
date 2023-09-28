@@ -6,4 +6,5 @@
 from KanjiWorkSheet_gui import KanjiWorkSheet_gui
 
 if __name__ == '__main__':
+    # 漢字プリント作成アプリの起動
     KanjiWorkSheet = KanjiWorkSheet_gui()

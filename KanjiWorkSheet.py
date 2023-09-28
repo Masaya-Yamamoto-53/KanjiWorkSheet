@@ -8,66 +8,17 @@ import datetime as datetime
 import pandas as pd
 import numpy as np
 
+from WorkSheet import WorkSheet
 from KanjiWorkSheet_draw import KanjiWorkSheet_draw
 
-
-# 文字が漢字であるか否かを評価する.
-def is_kanji(char):
-    return '\u4e00' <= char <= '\u9faf'
-
-
-class KanjiWorkSheet:
+class KanjiWorkSheet(WorkSheet):
     def __init__(self):
-        # デバッグ情報を表示する場合はTrue
-        self.kDebug = True
-
-        # 問題集/ログの列
-        self.kFileColumns = [
-              '学年'
-            , '問題文'
-            , '答え'
-            , '番号'
-            , '管理番号'
-            , '最終更新日'
-            , '結果'
-            , '履歴'
-        ]
-
-        self.kGrade = self.kFileColumns[0]
-        self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
-        self.kProblem = self.kFileColumns[1]
-        self.kAnswer = self.kFileColumns[2]
-        self.kNumber = self.kFileColumns[3]
-        self.kAdminNumber = self.kFileColumns[4]
-        self.kLastUpdate = self.kFileColumns[5]
-        self.kResult = self.kFileColumns[6]
-        self.kHistory = self.kFileColumns[7]
-
-        # 漢字テストの結果
-        self.kNotMk = '-'
-        self.kCrctMk = 'o'
-        self.kIncrctMk = 'x'
-        self.kDayMk = 'd'
-        self.kWeekMk = 'w'
-        self.kMonthMk = 'm'
-
-        # レポートの辞書キー
-        self.report_key_list = [
-              self.kNotMk
-            , self.kCrctMk
-            , self.kIncrctMk
-            , self.kDayMk
-            , self.kWeekMk
-            , self.kMonthMk
-        ]
-
-        # 問題集
-        self.path_of_worksheet = ''      # 問題集のパス
-        self.worksheet = pd.DataFrame()  # 問題集のデータを保持するデータフレーム
+        super(KanjiWorkSheet, self).__init__(debug=True)
 
         # 漢字プリント
         self.kanji_worksheet = pd.DataFrame()  # 漢字プリントのデータを保持するデータフレーム
         self.kanji_worksheet_idx = []          # 漢字プリントに出題する問題集のインデックスのリスト
+        self.list_a_idx = []
         self.list_x_idx = []
         self.list_d_idx = []
         self.list_w_idx = []
@@ -86,366 +37,12 @@ class KanjiWorkSheet:
         self.number_of_problem = 20  # 出題数(デフォルト:20)
 
         # 漢字マスタの読み込み.
-        self.kanji_by_grade_list = [[] for _ in range(self.kGradeRange[1] + 1)]
         self.answer_kanji_keyword = []
-
-    # 該当する漢字を抽出する.
-    def get_any_kanji_problem(self, target_kanji):
-        return any([target in target_kanji for target in self.kanji_worksheet[self.kAnswer]])
-
-    def get_kanji_problem(self, target_kanji):
-        # 答えに指定した漢字が含まれているか確認する.
-        print(self.kanji_worksheet[self.get_any_kanji_problem(target_kanji)])
-
-    # 問題集から学年に対応する漢字をリスト化する.
-    def create_list_kanji_by_grade(self):
-        """問題集から学年に対応する漢字をリスト化する."""
-        # このリストは不必要なルビを削除するための判断材料として使用する.
-        grade_old = []  # 今までの漢字を格納するリスト
-        for grade in range(self.kGradeRange[0], self.kGradeRange[1] + 1):
-            # 学年に該当するデータを抽出する.
-            worksheet = self.get_problem_with_grade([grade])
-            # 抽出したデータが存在する場合
-            if len(worksheet) > 0:
-                # 1語ずつ配列に格納する
-                for ans in worksheet[self.kAnswer]:
-                    self.kanji_by_grade_list[grade].append([char for char in ans])
-
-                # 多次元を1次元に変換
-                self.kanji_by_grade_list[grade] = [item for sublist in self.kanji_by_grade_list[grade] for item in sublist]
-                # ソートして、ユニークにする.
-                self.kanji_by_grade_list[grade] = sorted(self.kanji_by_grade_list[grade])
-                self.kanji_by_grade_list[grade] = list(set(self.kanji_by_grade_list[grade]))
-                # 前の学年の漢字のみ取り除く.
-                self.kanji_by_grade_list[grade] = list(set(self.kanji_by_grade_list[grade]) - set(grade_old))
-
-                # 現在の学年の漢字だけを残すため、それ以降の漢字を記憶しておく.
-                grade_old = grade_old + self.kanji_by_grade_list[grade]
-
-                # 学年毎に習う漢字数を表示する.
-                self.print_info('小学' + str(grade) + '年生: 全 ' + str(len(self.kanji_by_grade_list[grade])) + ' 文字')
+        # 最後の出題から30日以上経過した漢字の辞書
+        self.old_kanji_dict = {}
 
     def get_list_kanji_by_grade(self, grade):
         return self.kanji_by_grade_list[grade]
-
-    # ファイル形式をチェックする.
-    def check_file_format(self, fmt_err_msg=None):
-        """
-        :param fmt_err_msg: エラーメッセージ
-        :type fmt_err_msg: string
-
-        ファイル形式をチェックする.
-        """
-        if fmt_err_msg is None:
-            fmt_err_msg = []
-        # 必要な列が順番通りに存在していることを確認する.
-        for name, i in zip(self.kFileColumns, range(len(self.kFileColumns))):
-            msg = '問題集の ' + str(i + 1) + '列目は[' + str(name) + ']' + '列である必要があります.'
-            # 問題集の列数のほうが大きいとき（列が不足していないとき）.
-            if i < len(self.worksheet.columns):
-                # 列の名称が不一致
-                if name != self.worksheet.columns[i]:
-                    fmt_err_msg.append(self.print_error(msg))
-            # 問題集の列数のほうが小さいとき（列が不足しているとき）.
-            else:
-                fmt_err_msg.append(self.print_error(msg))
-
-        return fmt_err_msg
-
-    # 欠損値をチェックする.
-    def check_column_nan(self, fmt_err_msg=None):
-        """
-        :param fmt_err_msg: エラーメッセージ
-        :type fmt_err_msg: string
-
-        欠損値をチェックする.
-        """
-        chk_list = [self.kGrade, self.kProblem, self.kAnswer, self.kNumber, self.kAdminNumber]
-        # '学年', '問題文', '答え', '番号', '管理番号' 列の欠損値を確認.
-        if fmt_err_msg is None:
-            fmt_err_msg = []
-        for col in chk_list:
-            if self.worksheet[col].isna().any():
-                fmt_err_msg.append(self.print_error('[' + col + ']列に空欄があります.'))
-
-        return fmt_err_msg
-
-    # 数値以外をチェックする.
-    def check_column_non_numeric(self, fmt_err_msg=None):
-        """
-        :param fmt_err_msg: エラーメッセージ
-        :type fmt_err_msg: string
-
-        数値以外をチェックする.
-        """
-        # '学年', '番号' 列に数値以外が入っていないか確認.
-        chk_list = [self.kGrade, self.kNumber]
-        if fmt_err_msg is None:
-            fmt_err_msg = []
-        for col in chk_list:
-            # 数値に変換し、変換に失敗した場合に欠損値にすることで、数値が入っているかを確認する.
-            data = pd.to_numeric(self.worksheet[col], errors='coerce')
-            msg = '[' + str(col) + ']列には数値を入れてください.'
-            if pd.isna(data).any():
-                fmt_err_msg.append(self.print_error(msg))
-
-        return fmt_err_msg
-
-    # 整数以外をチェックする.
-    def check_column_non_integer(self, fmt_err_msg=None):
-        """整数以外をチェックする."""
-        # '学年', '番号' 列に整数以外が入っていないか確認.
-        chk_list = [self.kGrade, self.kNumber]
-        if fmt_err_msg is None:
-            fmt_err_msg = []
-        for col in chk_list:
-            data = self.worksheet[col]
-            msg = '[' + str(col) + ']列には数値を入れてください.'
-            if any(np.floor(data) != data):
-                fmt_err_msg.append(self.print_error(msg))
-
-        return fmt_err_msg
-
-    # 範囲外の数値をチェックする.
-    def check_column_out_of_range(self, fmt_err_msg):
-        """範囲外の数値をチェックする."""
-        # [学年] 列の範囲外の数値が入っていないか確認.
-        low = len(self.worksheet[self.worksheet[self.kGrade] < self.kGradeRange[0]])
-        high = len(self.worksheet[self.worksheet[self.kGrade] > self.kGradeRange[-1]])
-        if low != 0 or high != 0:
-            msg = '[' + str(self.kGrade) + ']列には' \
-                      + str(self.kGradeRange[ 0]) + 'から' \
-                      + str(self.kGradeRange[-1]) + 'の範囲内にしてください.'
-            fmt_err_msg.append(self.print_error(msg))
-
-        return fmt_err_msg
-
-    # 未定義の文字をNotMkに置き換える.
-    def replace_undef_char_with_NotMk(self):
-        """未定義の文字をNotMkに置き換える."""
-        # 結果がself.report_key_list以外の場合は、self.kNotMkに置き換える。
-        worksheet = self.worksheet
-        for key in self.report_key_list:
-            worksheet = worksheet[worksheet[self.kResult] != key]
-
-        idx = worksheet.index.values
-        if len(idx) > 0:
-            self.worksheet.loc[idx, self.kResult] = self.kNotMk
-            self.save_worksheet()
-
-    # 履歴がNanの場合は、''に置き換える。
-    def replace_nan_char_with_space(self):
-        # 履歴がNanの場合は、''に置き換える。
-        worksheet = self.worksheet[pd.isna(self.worksheet[self.kHistory])]
-        pd_idx = worksheet.index.values
-        if len(pd_idx) > 0:
-            self.worksheet.loc[pd_idx, self.kHistory] = self.worksheet.loc[pd_idx, self.kHistory].fillna('')
-            self.save_worksheet()
-
-    def check_kanji_ruby(self, fmt_err_msg):
-        flg = False
-        i = 0
-        for statement in self.worksheet[self.kProblem]:
-            for word in statement:
-                if is_kanji(word):
-                    flg = True
-                elif flg:
-                    if word != '<':
-                        msg = str(i + 1) + '行目の問題文にルビがありません.'
-                        fmt_err_msg.append(self.print_error(msg))
-                    flg = False
-                else:
-                    flg = False
-
-            i += 1
-
-        return fmt_err_msg
-
-    # 問題文の構文をチェックする.
-    def check_column_syntax(self, fmt_err_msg):
-        n = len(self.worksheet[self.kProblem])
-        for sentence, ans, num in zip(self.worksheet[self.kProblem], self.worksheet[self.kAnswer], range(n)):
-            r_inflag = False  # True: ルビの開始記号<を通過したとき
-            # False: ルビの終了記号>を通過したとき
-            r_nest_err = False  # True: ルビの指定文字が入れ子になっているとき
-            # False: 入れ子になっていないとき
-            r_cnt_err = False  # True: ルビの文字数が0のとき
-            # False: ルビの文字数が1以上のとき
-            r_err = False  # True: ルビの何れかが大文字
-            # False: すべてルビが小文字
-            r_word_cnt = 0  # ルビの文字数
-
-            p_inflag = False  # True: 問題枠の開始記号[を通過したとき
-            # False: 問題枠の終了記号]を通過したとき
-            p_nest_err = False  # True: 問題枠の指定文字が入れ子になっているとき
-            # False: 入れ子にになっていないとき
-            p_cnt_err = False  # True: 問題の文字数が0のとき
-            # False: 問題の文字数が1以上のとき
-            p_word_cnt = 0  # 問題枠の文字数
-            p_frame_cnt = 0  # 問題枠の数
-
-            for word in list(sentence):
-                ##########################################################
-                # 問題文のルビ<>が入れ子になっていないか、文字が入っているか確認する.
-                ##########################################################
-                if word == u'＜' or word == u'＞':
-                    r_err = True
-                if word == u'<':
-                    # 入れ子判定: '<'の後に、'>'ではなく、'<'が来たとき
-                    if r_inflag == True:
-                        r_nest_err = True
-                    r_inflag = True
-                if word == u'>':
-                    # 入れ子判定: '<'の前に、'>'が来たとき
-                    if r_inflag == False:
-                        r_nest_err = True
-                    else:
-                        # 文字数違反
-                        if r_word_cnt == 0:
-                            r_cnt_err = True
-                    r_inflag = False
-                    r_word_cnt = 0
-                if r_inflag == True and word != u'<':
-                    r_word_cnt += 1
-                ##########################################################
-                # 問題文の問題枠が入れ子になっていないか、文字が入っていないか確認する.
-                ##########################################################
-                if word == u'[':
-                    # 入れ子判定: '['の後に、']'ではなく、'['が来たとき
-                    if p_inflag == True:
-                        p_nest_err = True
-                    p_inflag = True
-                if word == u']':
-                    # 入れ子判定: '['の前に、']'が来たとき
-                    if p_inflag == False:
-                        p_nest_err = True
-                    else:
-                        # 文字数違反
-                        if p_word_cnt == 0:
-                            p_cnt_err = False  # 文字数違反は無効
-                            p_frame_cnt += 1   # 文字数違反は無効
-                        else:
-                            p_frame_cnt += 1
-                    p_inflag = False
-                    p_word_cnt = 0
-                if p_inflag == True and word != u'[':
-                    p_word_cnt += 1
-
-            if r_cnt_err:
-                msg = str(num + 1) + '行目の問題文のルビが空欄です.'
-                fmt_err_msg.append(self.print_error(msg))
-
-            if r_err:
-                msg = str(num + 1) + '行目の問題文のルビの記号が全角です.'
-                fmt_err_msg.append(self.print_error(msg))
-
-            if r_nest_err and r_err == False:
-                msg = str(num + 1) + '行目の問題文のルビの指定が入れ子になっています.'
-                fmt_err_msg.append(self.print_error(msg))
-
-            if p_nest_err:
-                msg = str(num + 1) + '行目の問題文の問題枠の指定が入れ子になっています.'
-                fmt_err_msg.append(self.print_error(msg))
-
-            if p_cnt_err:
-                msg = str(num + 1) + '行目の問題文の問題枠が空欄です.'
-                fmt_err_msg.append(self.print_error(msg))
-
-                # 答えの文字数と問題枠の数が合わないとき
-            if len(ans) != p_frame_cnt and p_nest_err == False and p_cnt_err == False:
-                msg = str(num + 1) + '行目の問題文の問題枠と答えの文字数が一致しません.'
-                fmt_err_msg.append(self.print_error(msg))
-
-        return fmt_err_msg
-
-    # 漢字プリントの問題集を読み込む.
-    def load_worksheet(self, path):
-        """
-        :parameter path: 問題集のパス
-        :type path: string
-
-        漢字プリントの問題集を読み込む.
-        """
-        self.path_of_worksheet = path
-        opn_err_msg = []
-        fmt_err_msg = []
-
-        # ファイルが存在する.
-        if os.path.exists(self.path_of_worksheet):
-            try:
-                # 問題集を読み込む.
-                self.worksheet = pd.read_csv(self.path_of_worksheet, sep=',', encoding='shift-jis')
-                self.print_info('問題集(' + self.path_of_worksheet + ')の読み込みに成功しました.')
-
-            except pd.errors.EmptyDataError:  # ファイルが空だった場合
-                fmt_err_msg.append(self.print_error('問題集が空です.'))
-
-            if len(fmt_err_msg) == 0:
-                # ファイル形式をチェックする.
-                fmt_err_msg = self.check_file_format(fmt_err_msg)
-
-            if len(fmt_err_msg) == 0:
-                # 欠損値をチェックする.
-                fmt_err_msg = self.check_column_nan(fmt_err_msg)
-
-            if len(fmt_err_msg) == 0:
-                # [学年] 列に数値以外が入っていないか確認.
-                fmt_err_msg = self.check_column_non_numeric(fmt_err_msg)
-
-            if len(fmt_err_msg) == 0:
-                # [学年] 列に整数以外が入っていないか確認.
-                fmt_err_msg = self.check_column_non_integer(fmt_err_msg)
-
-            if len(fmt_err_msg) == 0:
-                # [学年] 列の範囲外の数値が入っていないか確認.
-                fmt_err_msg = self.check_column_out_of_range(fmt_err_msg)
-
-            if len(fmt_err_msg) == 0:
-                # [問題文]の構文にエラーがないか確認.
-                fmt_err_msg = self.check_column_syntax(fmt_err_msg)
-
-            if len(fmt_err_msg) == 0:
-                # 漢字にルビが降られていることをチェックする.
-                fmt_err_msg = self.check_kanji_ruby(fmt_err_msg)
-
-        # ファイルが存在しない.
-        else:
-            # データを初期化し, エラーメッセージを出力する.
-            self.worksheet = pd.DataFrame()
-            opn_err_msg.append(self.print_error('問題集が存在しません.'))
-
-        # 結果がself.report_key_list以外の場合は、self.kNotMkに置き換える。
-        self.replace_undef_char_with_NotMk()
-
-        # 履歴がNanの場合は、''に置き換える。
-        self.replace_nan_char_with_space()
-
-        # 学年毎の漢字を確認する.
-        self.create_list_kanji_by_grade()
-
-        # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
-        return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \
-             , len(fmt_err_msg[0:5]) != 0, fmt_err_msg[0:5]
-
-    # 漢字プリントの問題集を書き込む.
-    def save_worksheet(self):
-        """漢字プリントの問題集を書き込む."""
-        wrt_err_msg = []
-
-        # ファイルが存在する.
-        if os.path.exists(self.path_of_worksheet):
-            try:
-                self.worksheet.to_csv(self.path_of_worksheet, index=False, encoding='shift-jis')
-                self.print_info('問題集(' + self.path_of_worksheet + ')を更新しました.')
-            # 問題集を開くなどして, 書き込みができない.
-            except PermissionError:
-                msg = '問題集(' + self.path_of_worksheet + ')を閉じてください. 更新できません.'
-                wrt_err_msg.append(self.print_error(msg))
-        # ファイルが存在しない.
-        else:
-            wrt_err_msg.append(self.print_error('問題集が存在しません. 更新できませんでした.'))
-
-        return len(wrt_err_msg) != 0, wrt_err_msg
 
     # 生徒の名前を設定する.
     def set_student_name(self, name):
@@ -522,7 +119,7 @@ class KanjiWorkSheet:
 
         設定したフォントサイズで問題を出題した場合, A4用紙におさまりが良いのが20問だったため.
         """
-        num = max(num, 0)  # 出題数が0以下の場合は, 0を設定する.
+        num = max(num, 0)   # 出題数が0以下の場合は, 0を設定する.
         num = min(num, 20)  # 出題数が20以上の場合は, 20を設定する.
         self.number_of_problem = num
         self.print_info('出題数を ' + str(self.number_of_problem) + ' に設定しました.')
@@ -601,6 +198,7 @@ class KanjiWorkSheet:
         else:
             self.print_error('存在しないログファイル(' + path + ')を削除しようとしました.')
 
+    # self.kanji_worksheetの「答え]を分割し、辞書のキーを作成する。
     def get_answer_kanji_keyword(self):
         target_kanji_problem_list = []
         target_kanji_answer = self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kAnswer].values
@@ -625,7 +223,7 @@ class KanjiWorkSheet:
                                    , self.kanji_worksheet_idx
                                    , range(self.get_number_of_problem())):
             for word in statement:
-                if is_kanji(word):
+                if self.is_kanji(word):
                     # 問題文の漢字が答えで使っている場合
                     if word in self.answer_kanji_keyword:
                         flg = True
@@ -660,7 +258,7 @@ class KanjiWorkSheet:
                 , self.kanji_worksheet_idx
                 , range(self.get_number_of_problem())):
             for word in statement:
-                if is_kanji(word):
+                if self.is_kanji(word):
                     # 選択した学年の最高位は除く。
                     del_flg = False
                     for grade in range(1, max(self.get_grade())):
@@ -707,9 +305,11 @@ class KanjiWorkSheet:
 
         return tmp_list.index.values
 
-    def remove_values(self, list_value, exclusion_list):
+    # 答えが重複している漢字のインデックスを除去する.
+    def remove_duplicates_index(self, list_value, exclusion_list):
         return [value for value in list_value if value not in exclusion_list]
 
+    # 答えが重複している漢字の問題を除去する.
     def remove_duplicates_kanji_problem_index(self, kanji_worksheet_idx, duplicate_dict):
         # 例)
         # 雨 [0, 2, 5, 8]
@@ -727,7 +327,7 @@ class KanjiWorkSheet:
         exclusion_list = []  # 除外リスト
         for list_value in duplicate_dict.values():
             list_value = set(list_value)
-            list_value = self.remove_values(list_value, exclusion_list)
+            list_value = self.remove_duplicates_index(list_value, exclusion_list)
 
             # 問題の答えが重複している場合は先頭のインデックスだけ取り除く
             if len(list_value) > 0:
@@ -743,21 +343,61 @@ class KanjiWorkSheet:
                 duplicate.append(value)
 
         # 除外したいものだけ残す。
-        duplicate = self.remove_values(duplicate, first_idx)
+        duplicate = self.remove_duplicates_index(duplicate, first_idx)
         duplicate = sorted(set(duplicate))
         duplicate = kanji_worksheet_idx[duplicate]  # 除外したい問題のインデックスを得る。
 
         # 漢字の問題が被っていない問題のインデックスを取得する。
-        not_duplicate = self.remove_values(kanji_worksheet_idx, duplicate)
+        not_duplicate = self.remove_duplicates_index(kanji_worksheet_idx, duplicate)
 
         return not_duplicate, duplicate
+
+    # 答えの漢字が重複している最終更新日を作成する.
+    def create_long_time_no_question_dict(self, ans_list, date_list, days=14):
+        date_map = {}
+
+        # この要素数はself.kanji_worksheetのインデックスとは違う.
+        # 答えのリストと、その最終更新日を格納する。
+        for i, phrase in enumerate(ans_list):
+            # 答えの熟語を分解する.
+            for char in phrase:
+                # Nanでない場合
+                if isinstance(date_list[i], str) or ~np.isnan(date_list[i]):
+                    idx_date_list = [i, date_list[i]]
+                    if char in date_map:
+                        # キーが存在するとき.
+                        date_map[char].append(idx_date_list)
+                    else:
+                        # キーが存在しないとき.
+                        date_map[char] = [idx_date_list]
+
+        # 各問題の最終更新日の中で、直近のものを選んで辞書に登録する.
+        newest_dates_dict = {}
+        old_kanji_dict = {}
+        for key, idx_date_list in date_map.items():
+            for idx_date_str in idx_date_list:
+                 date_str = idx_date_str[1]
+                 date_str = date_str.replace('"', '')
+                 date_str = date_str.replace("'", '')
+                 date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S.%f")
+                 if key not in newest_dates_dict or date_obj > newest_dates_dict[key][1]:
+                     newest_dates_dict[key] = [idx_date_str[0], date_obj]
+
+            # 前回出題してから経過した日数から候補を選択
+            for grade in self.grade:
+                if key in self.kanji_by_grade_list[grade]:
+                    if self.create_date - newest_dates_dict[key][1] > datetime.timedelta(days=days):
+                        old_kanji_dict[key] = newest_dates_dict[key][0]
+                        self.print_info('(' + str(key) + ') ' + '経過時間: '+ str(self.create_date - newest_dates_dict[key][1]))
+
+        self.print_info(('合計：' + str(len(old_kanji_dict))))
+
+        return old_kanji_dict
 
     # 答えの漢字が重複しているインデックスを作成する.
     def create_duplicate_kanji_index_dict(self, ans_list):
         index_map = {}
         result_dict = {}
-
-        print(ans_list.index)
 
         # この要素数はself.kanji_worksheetのインデックスとは違う.
         # 答えのリストと、その要素数を格納する。
@@ -910,6 +550,9 @@ class KanjiWorkSheet:
         # ただし、答えに重複がある問題については選択しないようにする。
         (list_o, num) = self.remove_duplicates_kanji_problem(self.get_number_of_problem(), self.kCrctMk, sort=True)
 
+        # 一ヶ月経過しても出題していない漢字の問題のインデックスを取得する.
+        #self.get_kanji_worksheet_old_index()
+
         if len(list_o) > 0:
             self.kanji_worksheet_idx = list_o  # 漢字プリントに出題する問題集のインデックスのリストを更新する.
             self.set_number_of_problem(num)    # 出題数を更新する.
@@ -917,14 +560,54 @@ class KanjiWorkSheet:
             # 問題を選出できなかったとき、練習モードと同じにする.
             self.create_train_mode_kanji_worksheet()
 
+    def get_kanji_worksheet_old_index(self):
+        # 最後の出題から30日以上経過した漢字の辞書を作成.
+        #tmp2_df = pd.DataFrame()
+        self.old_kanji_dict = self.create_duplicate_kanji_date_dict(
+                  self.kanji_worksheet[self.kAnswer].tolist()
+                , self.kanji_worksheet[self.kLastUpdate].tolist()
+        )
+        #print("==================================================================")
+        #print(self.old_kanji_dict)
+
+        # 指定した答えの問題を抽出し、シャッフルしてその先頭のインデックスを得る.
+        idx_list = []
+        for key in self.old_kanji_dict.keys():
+            tmp_df_idx = self.get_problem_with_answer(key, self.grade).index.values
+            np.random.shuffle(tmp_df_idx)
+            idx_list.append(tmp_df_idx[0])
+
+        #print("==================================================================")
+        #print(idx_list)
+        #print(len(idx_list))
+        #print(len(set(sorted(idx_list))))
+
+        #for idx in idx_list:
+        #    tmp1_df = pd.DataFrame(self.worksheet.loc[idx, :]).T
+
+        #    if not tmp1_df[self.kGrade].isin([self.grade]).any():
+        #        if len(tmp2_df) > 0:
+        #            tmp2_df = pd.concat([tmp2_df, tmp1_df], axis=0, ignore_index=False)
+        #        else:
+        #            tmp2_df = tmp1_df
+
+        # gradeで除いてしまった問題は再び追加する。
+        #self.kanji_worksheet = pd.concat([self.kanji_worksheet, tmp2_df])
+        #print(tmp2_df.index.values)
+
+        return idx_list  #, tmp2_df #tmp2_df.index.values, tmp2_df
+
     # 訓練モードの漢字プリントを作成する.
     def create_train_mode_kanji_worksheet(self):
         """訓練モードの漢字プリントを作成する."""
         self.print_info("Train Mode")
 
         # テスト問題を選定する.
+        # 一ヶ月経過しても出題していない漢字の問題のインデックスを取得する.
+        self.list_a_idx = self.get_kanji_worksheet_old_index()
         # 間違えた問題のインデックスを取得する.
         self.list_x_idx = self.get_kanji_worksheet_index(self.kIncrctMk, days=0)
+        #self.list_x_idx = []
         # 昨日間違えた問題のインデックスを取得する.
         self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk, days=1)
         # 一週間前に間違えた問題のインデックスを取得する.
@@ -933,9 +616,10 @@ class KanjiWorkSheet:
         self.list_m_idx = self.get_kanji_worksheet_index(self.kMonthMk, days=7 * 4 - 7)
 
         # 4つの問題を連結する.
-        # 優先順位: 不正解 ＞ 次の日に出題 ＞ 一週間後に出題 ＞ 一ヶ月後に出題 ＞ 未出題 ＞ 正解
+        # 優先順位: 30日以上出題していない問題 ＞ 不正解 ＞ 次の日に出題 ＞ 一週間後に出題 ＞ 一ヶ月後に出題 ＞ 未出題 ＞ 正解
         self.kanji_worksheet_idx = np.concatenate([
                   self.list_x_idx
+                , self.list_a_idx
                 , self.list_d_idx
                 , self.list_w_idx
                 , self.list_m_idx])
@@ -955,7 +639,11 @@ class KanjiWorkSheet:
             num = num - len(self.list_n_idx[0:n_num])
             if num > 0:
                 # 既に出題し、正解している問題を候補に挙げる.
-                (self.list_o_idx, o_num) = self.remove_duplicates_kanji_problem(num, self.kCrctMk, sort=True)
+                (self.list_o_idx, _) = self.remove_duplicates_kanji_problem(num, self.kCrctMk, sort=True)
+
+                self.list_o_idx = [item for item in self.list_a_idx if item not in self.list_a_idx]
+                o_num = len(self.list_o_idx)
+
                 self.kanji_worksheet_idx = np.concatenate([self.kanji_worksheet_idx, self.list_o_idx[0:o_num]])
 
                 # それでも足りない場合は、一日後や一週間後、一ヶ月後に出題する予定の未出題の問題を選択することもできるが、
@@ -976,8 +664,9 @@ class KanjiWorkSheet:
 
         if len(list_o) > 0:
             # 間違えた問題を最優先で選ぶ.
-            hist = list_o[self.kHistory].str[-10:].str.count(self.kIncrctMk)
-            self.kanji_worksheet_idx = hist.sort_values(ascending=False).head(num).index
+            hist = self.kanji_worksheet.loc[list_o, self.kHistory].str[-10:].str.count(self.kIncrctMk)
+            hist = hist.sort_values(ascending=False).head(num)
+            self.kanji_worksheet_idx = hist.sort_values(ascending=False).head(num).index.tolist()
 
             # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
             self.set_number_of_problem(len(self.kanji_worksheet_idx))
@@ -989,7 +678,7 @@ class KanjiWorkSheet:
     def report_kanji_worksheet(self):
         """漢字プリントの出題問題の概要を表示する."""
         msg_list = [
-            '　　　　　未出題: '
+              '　　　　　未出題: '
             , '　　　　　　正解: '
             , '　　　　　不正解: '
             , '明日以降に再実施: '
@@ -1147,49 +836,3 @@ class KanjiWorkSheet:
 
         return len(opn_err_msg), opn_err_msg, status_list
 
-    # 問題集から指定したステータスに該当する問題を取得する.
-    def get_problem_with_status(self, grade, status):
-        """
-        :param grade: 学年
-        :type grade: list
-        :param status: 採点結果
-        :type status: string
-
-        問題集から指定したステータスに該当する問題を取得する.
-        """
-        tmp = self.get_problem_with_grade(grade)
-        return tmp[tmp[self.kResult] == status]
-
-    # 問題集から指定した学年の問題を取得する.
-    def get_problem_with_grade(self, grade):
-        """
-        :param grade: 学年
-        :type grade: list
-
-        問題集から指定した学年の問題を取得する.
-        """
-        return self.worksheet[self.worksheet[self.kGrade].isin(grade)]
-
-    # デバッグ情報を標準出力する.
-    def print_info(self, msg):
-        """
-        :param msg: 出力メッセージ
-        :type msg: string
-
-        デバッグ情報を標準出力する.
-        """
-        if self.kDebug:
-            print('Info: ' + msg)
-        return msg
-
-    # エラーメッセージを標準出力する.
-    def print_error(self, msg):
-        """
-        :param msg: 出力メッセージ
-        :type msg: string
-
-        エラーメッセージを標準出力する.
-        """
-        if self.kDebug:
-            print('\033[31m' + 'Error: ' + msg + '\033[0m')
-        return msg

@@ -51,7 +51,7 @@ class KanjiWorkSheet_draw:
         self.kColNumMin = 10
 
         # 問題番号の下にオフセットする
-        self.kProblemStartOffset = 25  # 問題文の開始位置
+        self.kProblemStartOffset = 20  # 問題文の開始位置
 
         # 問題の枠のサイズ
         self.rect_size = 48
