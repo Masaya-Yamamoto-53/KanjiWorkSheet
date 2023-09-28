@@ -13,11 +13,11 @@ import tkinter.filedialog as filedialog
 
 from functools import partial
 
-from KanjiWorkSheet import KanjiWorkSheet
+from KanjiWorkSheet_prob import KanjiWorkSheet_prob
 
 class KanjiWorkSheet_gui:
     def __init__(self):
-        self.KanjiWorkSheet = KanjiWorkSheet()
+        self.KanjiWorkSheet = KanjiWorkSheet_prob()
         self.Root = tk.Tk()
         self.Root.title(u'漢字プリント作成ツール')
         self.Root.geometry('620x560')
