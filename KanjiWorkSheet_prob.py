@@ -41,8 +41,9 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 最後の出題から30日以上経過した漢字の辞書
         self.old_kanji_dict = {}
 
-    def get_list_kanji_by_grade(self, grade):
-        return self.kanji_by_grade_list[grade]
+    # 指定した学年に該当する問題集を取得する.
+    # def get_list_kanji_by_grade(self, grade):
+    #     return self.kanji_by_grade_list[grade]
 
     # 生徒の名前を設定する.
     def set_student_name(self, name):

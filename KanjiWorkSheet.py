@@ -5,7 +5,6 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 import os
 import pandas as pd
-import numpy as np
 
 class KanjiWorkSheet:
     def __init__(self, debug=False):
@@ -39,7 +38,6 @@ class KanjiWorkSheet:
         self.kCrctMk = 'o'
         self.kIncrctMk = 'x'
         self.kDayMk = 'd'
-
         self.kWeekMk = 'w'
         self.kMonthMk = 'm'
 
@@ -130,7 +128,7 @@ class KanjiWorkSheet:
 
         # ファイル形式をチェックする.
         if len(fmt_err_msg) == 0:
-            fmt_err_msg = self.__check_file_format(fmt_err_msg)
+            fmt_err_msg = self.__check_file_format()
         # 欠損値をチェックする.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_column_nan(fmt_err_msg)
@@ -226,12 +224,12 @@ class KanjiWorkSheet:
         if fmt_err_msg is None:
             fmt_err_msg = []
         # 必要な列が順番通りに存在していることを確認する.
-        for name, i in zip(self.kFileColumns, range(len(self.kFileColumns))):
-            msg = '問題集の ' + str(i + 1) + '列目は[' + str(name) + ']' + '列である必要があります.'
+        for i, column_name in enumerate(self.kFileColumns):
+            msg = '問題集の ' + str(i + 1) + '列目は[' + str(column_name) + ']' + '列である必要があります.'
             # 問題集の列数のほうが大きいとき（列が不足していないとき）.
             if i < len(self.worksheet.columns):
                 # 列の名称が不一致
-                if name != self.worksheet.columns[i]:
+                if column_name != self.worksheet.columns[i]:
                     fmt_err_msg.append(self.print_error(msg))
             # 問題集の列数のほうが小さいとき（列が不足しているとき）.
             else:
@@ -288,7 +286,7 @@ class KanjiWorkSheet:
         for col in chk_list:
             data = self.worksheet[col]
             msg = '[' + str(col) + ']列には数値を入れてください.'
-            if any(np.floor(data) != data):
+            if any(list(data.astype(int).values) != data):
                 fmt_err_msg.append(self.print_error(msg))
 
         return fmt_err_msg
@@ -297,7 +295,7 @@ class KanjiWorkSheet:
     def __check_column_out_of_range(self, fmt_err_msg):
         """範囲外の数値をチェックする."""
         # [学年] 列の範囲外の数値が入っていないか確認.
-        low = len(self.worksheet[self.worksheet[self.kGrade] < self.kGradeRange[0]])
+        low  = len(self.worksheet[self.worksheet[self.kGrade] < self.kGradeRange[ 0]])
         high = len(self.worksheet[self.worksheet[self.kGrade] > self.kGradeRange[-1]])
         if low != 0 or high != 0:
             msg = '[' + str(self.kGrade) + ']列には' \
@@ -309,19 +307,19 @@ class KanjiWorkSheet:
 
     # ルビの有無をチェック
     def __check_kanji_ruby(self, fmt_err_msg):
-        flg = False
+        kanji_flg = False
         i = 0
         for statement in self.worksheet[self.kProblem]:
             for word in statement:
                 if self.is_kanji(word):
-                    flg = True
-                elif flg:
+                    kanji_flg = True
+                elif kanji_flg:
                     if word != '<':
                         msg = str(i + 1) + '行目の問題文にルビがありません.'
                         fmt_err_msg.append(self.print_error(msg))
-                    flg = False
+                    kanji_flg = False
                 else:
-                    flg = False
+                    kanji_flg = False
 
             i += 1
 
@@ -432,9 +430,9 @@ class KanjiWorkSheet:
         for key in self.report_key_list:
             worksheet = worksheet[worksheet[self.kResult] != key]
 
-        idx = worksheet.index.values
-        if len(idx) > 0:
-            self.worksheet.loc[idx, self.kResult] = self.kNotMk
+        pd_idx = worksheet.index.values
+        if len(pd_idx) > 0:
+            self.worksheet.loc[pd_idx, self.kResult] = self.kNotMk
             self.save_worksheet()
 
     # 履歴がNanの場合は、''に置き換える。
@@ -473,4 +471,3 @@ class KanjiWorkSheet:
 
                 # 学年毎に習う漢字数を表示する.
                 self.print_info('小学' + str(grade) + '年生: 全 ' + str(len(self.kanji_by_grade_list[grade])) + ' 文字')
-
