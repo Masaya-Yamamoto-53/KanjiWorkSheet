@@ -18,13 +18,15 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 漢字プリント
         self.kanji_worksheet = pd.DataFrame()  # 漢字プリントのデータを保持するデータフレーム
         self.kanji_worksheet_idx = []          # 漢字プリントに出題する問題集のインデックスのリスト
-        self.list_a_idx = []
-        self.list_x_idx = []
-        self.list_d_idx = []
-        self.list_w_idx = []
-        self.list_m_idx = []
-        self.list_n_idx = []
-        self.list_o_idx = []
+
+        self.list_x_idx = []  # 間違えた問題のインデックス
+        self.list_a_idx = []  # 出題してからしばらく再出題していない問題のインデックス
+        self.list_d_idx = []  # 昨日間違えた問題のインデックス
+        self.list_w_idx = []  # 一週間前に間違えた問題のインデックス
+        self.list_m_idx = []  # 一ヶ月前に間違えた問題のインデックス
+        self.list_n_idx = []  # 未出題のインデックス
+        self.list_o_idx = []  # 正解している問題のインデックス
+
         self.create_date = ''  # 作成日
 
         self.student_name = ''  # 出題対象者(生徒名)
@@ -561,6 +563,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
             # 問題を選出できなかったとき、練習モードと同じにする.
             self.create_train_mode_kanji_worksheet()
 
+    # 出題してからしばらく再出題していない漢字の問題のインデックスを取得する.
     def get_kanji_worksheet_old_index(self):
         # 最後の出題から30日以上経過した漢字の辞書を作成.
         #tmp2_df = pd.DataFrame()
@@ -604,11 +607,10 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         self.print_info("Train Mode")
 
         # テスト問題を選定する.
-        # 一ヶ月経過しても出題していない漢字の問題のインデックスを取得する.
-        self.list_a_idx = self.get_kanji_worksheet_old_index()
         # 間違えた問題のインデックスを取得する.
         self.list_x_idx = self.get_kanji_worksheet_index(self.kIncrctMk, days=0)
-        #self.list_x_idx = []
+        # 出題してからしばらく再出題していない漢字の問題のインデックスを取得する.
+        self.list_a_idx = self.get_kanji_worksheet_old_index()
         # 昨日間違えた問題のインデックスを取得する.
         self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk, days=1)
         # 一週間前に間違えた問題のインデックスを取得する.

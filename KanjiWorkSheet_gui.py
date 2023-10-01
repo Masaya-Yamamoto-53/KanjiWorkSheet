@@ -1014,7 +1014,15 @@ class KanjiWorkSheet_gui:
                 name += '_'
             else:
                 name += word
-        return './' + name + '_漢字テスト.pdf'
+
+        if self.KanjiWorkSheet.kMDRW == self.KanjiWorkSheet.get_mode():
+            mode_str = '復習モード'
+        elif self.KanjiWorkSheet.kMDTR == self.KanjiWorkSheet.get_mode():
+            mode_str = '練習モード'
+        else:
+            mode_str = '苦手モード'
+
+        return './' + name + '_漢字テスト_' + mode_str + '.pdf'
 
     def update_scoring(self):
         """採点を更新する."""

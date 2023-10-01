@@ -33,7 +33,7 @@ class KanjiWorkSheet_draw:
         pdfmetrics.registerFont(TTFont(self.kFont, self.kFontPath))  # フォント選択
 
         # PDF設定値
-        self.kProbFontSize = 17  # 問題文のフォントサイズ
+        self.kProbFontSize  = 17  # 問題文のフォントサイズ
         self.kProbFrameSize = 10  # 問題枠のサイズ
 
         # 問題文のサイズ上限値
@@ -148,7 +148,7 @@ class KanjiWorkSheet_draw:
 
         # 日付：月
         x_pos_tmp = x_pos + 4
-        for month in str(self.create_date.month):
+        for month in str(self.create_date.month)[::-1]:
             self.page.drawString(x_pos_tmp, y_pos - 240, month)  # 月
             x_pos_tmp -= 7
 
