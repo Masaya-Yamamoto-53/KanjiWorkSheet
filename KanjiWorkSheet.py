@@ -81,7 +81,7 @@ class KanjiWorkSheet:
                 fmt_err_msg.append(self.print_error('問題集が空です.'))
 
             # 問題集の内容をチェックする.
-            fmt_err_msg = self.check_worksheet()
+            fmt_err_msg = self.__check_worksheet()
 
         # ファイルが存在しない.
         else:
@@ -123,7 +123,7 @@ class KanjiWorkSheet:
         return len(wrt_err_msg) != 0, wrt_err_msg
 
     # 漢字プリントの問題集をチェックする.
-    def check_worksheet(self):
+    def __check_worksheet(self):
         fmt_err_msg = []
 
         # ファイル形式をチェックする.
@@ -146,7 +146,7 @@ class KanjiWorkSheet:
             fmt_err_msg = self.__check_kanji_ruby(fmt_err_msg)
         # 問題文の構文をチェックする.
         if len(fmt_err_msg) == 0:
-            fmt_err_msg = self.__check_column_syntax(fmt_err_msg)
+            fmt_err_msg = self.__check_kanji_syntax(fmt_err_msg)
 
         return fmt_err_msg
 
@@ -325,43 +325,57 @@ class KanjiWorkSheet:
 
         return fmt_err_msg
 
+    def __is_ruby_fullwidth_prefix(self, word):
+        return word == u'＜'
+
+    def __is_ruby_fullwidth_suffix(self, word):
+        return word == u'＞'
+
+    def __is_ruby_prefix(self, word):
+        return word == u'<'
+
+    def __is_ruby_suffix(self, word):
+        return word == u'>'
+
+    def __is_problem_prefix(self, word):
+        return word == u'['
+
+    def __is_problem_suffix(self, word):
+        return word == u']'
+
     # 問題文の構文をチェックする.
-    def __check_column_syntax(self, fmt_err_msg):
+    def __check_kanji_syntax(self, fmt_err_msg):
         n = len(self.worksheet[self.kProblem])
         for sentence, ans, num in zip(self.worksheet[self.kProblem], self.worksheet[self.kAnswer], range(n)):
-            r_inflag = False  # True: ルビの開始記号<を通過したとき
-            # False: ルビの終了記号>を通過したとき
-            r_nest_err = False  # True: ルビの指定文字が入れ子になっているとき
-            # False: 入れ子になっていないとき
-            r_cnt_err = False  # True: ルビの文字数が0のとき
-            # False: ルビの文字数が1以上のとき
-            r_err = False  # True: ルビの何れかが大文字
-            # False: すべてルビが小文字
+            r_inflag   = False  # ルビの True:開始記号<を通過したとき, False:ルビの終了記号>を通過したとき
+            r_nest_err = False  # ルビの指定文字が True:入れ子になっているとき, False:入れ子になっていないとき
+            r_cnt_err  = False  # ルビの文字数が True:0のとき, False:1以上のとき
+            r_err      = False  # ルビの True:何れかが大文字, False:すべてルビが小文字
+
             r_word_cnt = 0  # ルビの文字数
 
-            p_inflag = False  # True: 問題枠の開始記号[を通過したとき
-            # False: 問題枠の終了記号]を通過したとき
-            p_nest_err = False  # True: 問題枠の指定文字が入れ子になっているとき
-            # False: 入れ子にになっていないとき
-            p_cnt_err = False  # True: 問題の文字数が0のとき
-            # False: 問題の文字数が1以上のとき
-            p_word_cnt = 0  # 問題枠の文字数
+            p_inflag   = False  # 問題の True:開始記号[を通過したとき, False:問題枠の終了記号]を通過したとき
+            p_nest_err = False  # 問題枠の True:指定文字が入れ子になっているとき, False:問題枠の指定文字が入れ子になっていないとき
+            p_cnt_err  = False  # 問題の True:文字数が0のとき, False:問題の文字数が1以上のとき
+
+            p_word_cnt  = 0  # 問題枠の文字数
             p_frame_cnt = 0  # 問題枠の数
 
             for word in list(sentence):
                 ##########################################################
                 # 問題文のルビ<>が入れ子になっていないか、文字が入っているか確認する.
                 ##########################################################
-                if word == u'＜' or word == u'＞':
+                # 問題文のルビ<>が全角であることを確認する.
+                if self.__is_ruby_fullwidth_prefix(word) or self.__is_ruby_fullwidth_suffix(word):
                     r_err = True
-                if word == u'<':
+                if self.__is_ruby_prefix(word):
                     # 入れ子判定: '<'の後に、'>'ではなく、'<'が来たとき
-                    if r_inflag == True:
+                    if r_inflag:
                         r_nest_err = True
                     r_inflag = True
-                if word == u'>':
+                if self.__is_ruby_suffix(word):
                     # 入れ子判定: '<'の前に、'>'が来たとき
-                    if r_inflag == False:
+                    if not r_inflag:
                         r_nest_err = True
                     else:
                         # 文字数違反
@@ -369,30 +383,30 @@ class KanjiWorkSheet:
                             r_cnt_err = True
                     r_inflag = False
                     r_word_cnt = 0
-                if r_inflag == True and word != u'<':
+                if r_inflag and (not self.__is_ruby_prefix(word)):
                     r_word_cnt += 1
                 ##########################################################
                 # 問題文の問題枠が入れ子になっていないか、文字が入っていないか確認する.
                 ##########################################################
-                if word == u'[':
+                if self.__is_problem_prefix(word):
                     # 入れ子判定: '['の後に、']'ではなく、'['が来たとき
-                    if p_inflag == True:
+                    if p_inflag:
                         p_nest_err = True
                     p_inflag = True
-                if word == u']':
+                if self.__is_problem_suffix(word):
                     # 入れ子判定: '['の前に、']'が来たとき
-                    if p_inflag == False:
+                    if not p_inflag:
                         p_nest_err = True
                     else:
                         # 文字数違反
                         if p_word_cnt == 0:
-                            p_cnt_err = False  # 文字数違反は無効
-                            p_frame_cnt += 1   # 文字数違反は無効
+                            p_cnt_err = True
                         else:
-                            p_frame_cnt += 1
+                            p_cnt_err = False
+                        p_frame_cnt += 1
                     p_inflag = False
                     p_word_cnt = 0
-                if p_inflag == True and word != u'[':
+                if p_inflag and (not self.__is_problem_prefix(word)):
                     p_word_cnt += 1
 
             if r_cnt_err:
@@ -415,7 +429,6 @@ class KanjiWorkSheet:
                 msg = str(num + 1) + '行目の問題文の問題枠が空欄です.'
                 fmt_err_msg.append(self.print_error(msg))
 
-                # 答えの文字数と問題枠の数が合わないとき
             if len(ans) != p_frame_cnt and p_nest_err == False and p_cnt_err == False:
                 msg = str(num + 1) + '行目の問題文の問題枠と答えの文字数が一致しません.'
                 fmt_err_msg.append(self.print_error(msg))
