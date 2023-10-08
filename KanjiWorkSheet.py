@@ -175,9 +175,29 @@ class KanjiWorkSheet:
 
     # 問題集から指定した答えの問題を取得する.
     def get_problem_with_answer(self, kanji, grade):
+        if type(grade) != type([]):
+            grade = [grade]
+
         temp = self.worksheet[self.worksheet[self.kAnswer].apply(lambda x: any(char in x for char in kanji))]
         grade_list = list(range(1, max(grade)+1))
         return temp[temp[self.kGrade].isin(grade_list)]
+
+    # 指定した学年の漢字のリストを取得する.
+    def get_kanji_by_grade_list(self, grade):
+        return self.kanji_by_grade_list[grade]
+
+    def get_analysis_correct_kanji_by_grade_dict(self, grade):
+        kanji_list = self.get_kanji_by_grade_list(grade)
+        result_dict = {}
+
+        for kanji in kanji_list:
+            problem_list = self.get_problem_with_answer(kanji, grade)
+            result_dict[kanji] = False
+            for result in problem_list[self.kResult]:
+                if result == self.kCrctMk:
+                    result_dict[kanji] = True
+
+        return result_dict
 
     # 文字が漢字であるか否かを評価する.
     def is_kanji(self, char):

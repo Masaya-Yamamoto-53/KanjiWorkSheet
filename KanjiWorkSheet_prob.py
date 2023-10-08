@@ -43,10 +43,6 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 最後の出題から30日以上経過した漢字の辞書
         self.old_kanji_dict = {}
 
-    # 指定した学年に該当する問題集を取得する.
-    # def get_list_kanji_by_grade(self, grade):
-    #     return self.kanji_by_grade_list[grade]
-
     # 生徒の名前を設定する.
     def set_student_name(self, name):
         """
@@ -265,7 +261,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
                     # 選択した学年の最高位は除く。
                     del_flg = False
                     for grade in range(1, max(self.get_grade())):
-                        if word in self.kanji_by_grade_list[grade]:
+                        if word in self.get_kanji_by_grade_list(grade):
                             del_flg = True
                     problem_statement_list[i] = problem_statement_list[i] + word
                 else:
@@ -388,7 +384,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
 
             # 前回出題してから経過した日数から候補を選択
             for grade in self.grade:
-                if key in self.kanji_by_grade_list[grade]:
+                if key in self.get_kanji_by_grade_list(grade):
                     if self.create_date - newest_dates_dict[key][1] > datetime.timedelta(days=days):
                         old_kanji_dict[key] = newest_dates_dict[key][0]
                         self.print_info('(' + str(key) + ') ' + '経過時間: '+ str(self.create_date - newest_dates_dict[key][1]))
@@ -643,8 +639,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
             if num > 0:
                 # 既に出題し、正解している問題を候補に挙げる.
                 (self.list_o_idx, _) = self.remove_duplicates_kanji_problem(num, self.kCrctMk, sort=True)
-
-                self.list_o_idx = [item for item in self.list_a_idx if item not in self.list_a_idx]
+                self.list_o_idx = list(set(self.list_o_idx) - set(self.list_a_idx))
                 o_num = len(self.list_o_idx)
 
                 self.kanji_worksheet_idx = np.concatenate([self.kanji_worksheet_idx, self.list_o_idx[0:o_num]])
@@ -778,12 +773,14 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
             fmt_err_msg.append(self.print_error('ログファイルの問題数と登録件数が不一致です. '))
             fmt_err_msg.append(self.print_error('結果の記入に間違いがあるか、未記入である可能性があります.'))
 
+        self.print_info(('--------------------------------------------------------------------------------'))
         self.print_info('＊　明日以降に再実施する問題を ' + str(result_dict[self.kDayMk]) + ' 件 登録しました.')
         self.print_info('＊　１週間後に再実施する問題を ' + str(result_dict[self.kWeekMk]) + ' 件 登録しました.')
         self.print_info('＊　１ヶ月後に再実施する問題を ' + str(result_dict[self.kMonthMk]) + ' 件 登録しました.')
         self.print_info('＊　不正解だった問題を ' + str(result_dict[self.kIncrctMk]) + ' 件 登録しました.')
         self.print_info('＊　正解だった問題を ' + str(result_dict[self.kCrctMk]) + ' 件 登録しました.')
         self.print_info('　　計 ' + str(sum) + ' 件 登録しました.')
+        self.print_info(('--------------------------------------------------------------------------------'))
 
         return len(opn_err_msg) != 0, opn_err_msg, len(fmt_err_msg) != 0, fmt_err_msg
 

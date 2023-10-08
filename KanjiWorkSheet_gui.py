@@ -53,6 +53,12 @@ class KanjiWorkSheet_gui:
         self.create_widget()
         self.Root.mainloop()
 
+    def CreateAnalysisWindow(self):
+        self.ana_window = tk.Toplevel(self.Root)
+        self.ana_window.geometry('620x560')
+        self.ana_window.title('分析')
+        label.pack()
+
     ################################################################################
     # ウィジェット作成用の関数
     ################################################################################
@@ -600,6 +606,16 @@ class KanjiWorkSheet_gui:
         )
         self.Print_Button.pack(side=tk.LEFT, padx=5)
 
+        # 分析ボタン
+        self.Analysis_Button = tk.Button(
+                  self.CreateWorkSheetFrame
+                , text='分析'
+                , command=self.CreateAnalysisWindow
+                , state=tk.DISABLED
+                , width=10, height=2
+        )
+        self.Analysis_Button.pack(side=tk.LEFT, padx=5)
+
     # 設定ファイルを読み込む.
     def load_setting_file(self):
         # 設定ファイルを読み込む
@@ -806,6 +822,14 @@ class KanjiWorkSheet_gui:
     # 「印刷」ボタンを無効にする.
     def disable_print_button(self):
         self.Print_Button['state'] = tk.DISABLED
+
+    # 「分析」ボタンを有効にする.
+    def enable_analysis_button(self):
+        self.Analysis_Button['state'] = tk.NORMAL
+
+    # 「分析」ボタンを有効にする.
+    def disable_analysis_button(self):
+        self.Analysis_Button['state'] = tk.DISABLED
 
     # 学年の設定を削除する.
     # 処理概要:
@@ -1259,11 +1283,15 @@ class KanjiWorkSheet_gui:
                 self.enable_create_button()
                 # 「印刷」ボタンを有効にする.
                 self.enable_print_button()
+                # 「分析」ボタンを有効にする.
+                self.enable_analysis_button()
             else:
                 # 「プリント作成」ボタンを無効にする.
                 self.disable_create_button()
                 # 「印刷」ボタンを無効にする.
                 self.disable_print_button()
+                # 「分析」ボタンを有効にする.
+                self.disable_analysis_button()
                 # 何らかのエラーメッセージを取得した場合は, メッセージボックスで通知する.
                 # ただし, ファイルが存在しないことをこのイベントでは通知しない.(煩わしいため)
                 for msg in fmt_err_msg:
@@ -1363,6 +1391,8 @@ class KanjiWorkSheet_gui:
                 self.disable_create_button()
                 # 「印刷」ボタンを無効にする.
                 self.disable_print_button()
+                # 「分析」ボタンを有効にする.
+                self.disable_analysis_button()
 
                 # 採点を更新する.
                 self.update_scoring()
@@ -1402,6 +1432,8 @@ class KanjiWorkSheet_gui:
                 self.enable_create_button()
                 # 「印刷」ボタンを有効にする.
                 self.enable_print_button()
+                # 「分析」ボタンを有効にする.
+                self.enable_analysis_button()
 
             # 問題集を正しく読み込めなかったとき
             else:
@@ -1411,6 +1443,8 @@ class KanjiWorkSheet_gui:
                 self.disable_create_button()
                 # 「印刷」ボタンを無効にする.
                 self.disable_print_button()
+                # 「分析」ボタンを有効にする.
+                self.disable_analysis_button()
 
                 # 何らかのエラーメッセージを取得した場合は, メッセージボックスで通知する.
                 for msg in err_msg:
