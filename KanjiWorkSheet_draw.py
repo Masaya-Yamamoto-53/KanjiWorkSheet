@@ -280,7 +280,7 @@ class KanjiWorkSheet_draw:
         for word in str_arr:
             # 句読点の場合
             if word == u'。' or word == u'、':
-                self.page.drawString(x_pos + (font_size / 3) * 2, y_pos + font_size / 2, word)
+                self.page.drawString(x_pos + (font_size / 3) * 2, y_pos + font_size / 1.5, word)
                 y_pos = y_pos - font_size
             # 拗音の場合
             elif word == u'ゃ' or word == u'ゅ' or word == u'ょ' or word == u'っ' \
@@ -375,7 +375,8 @@ class KanjiWorkSheet_draw:
         self.page.line(x_pos, y_pos + (rect_height / 2), x_pos + rect_width, y_pos + (rect_height / 2))  # 横
 
         # 枠
-        self.page.setStrokeColor('black')
+        self.page.setStrokeColor('gray')
+        #self.page.setStrokeColor('black')
         self.page.setLineWidth(1)
         self.page.setDash([])
         self.page.rect(x_pos, y_pos, rect_width, rect_height, fill=False)

@@ -24,7 +24,7 @@ class KanjiWorkSheet:
         ]
 
         self.kGrade = self.kFileColumns[0]
-        self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
+        self.kGradeRange = [1, 12]  # 学年の最小値と最大値(上下限のチェックに使用)
         self.kProblem = self.kFileColumns[1]
         self.kAnswer = self.kFileColumns[2]
         self.kNumber = self.kFileColumns[3]
@@ -43,12 +43,12 @@ class KanjiWorkSheet:
 
         # レポートの辞書キー
         self.report_key_list = [
-                  self.kNotMk
-                , self.kCrctMk
-                , self.kIncrctMk
-                , self.kDayMk
-                , self.kWeekMk
-                , self.kMonthMk
+                  self.kNotMk     # 未出題
+                , self.kCrctMk    # 正解
+                , self.kIncrctMk  # 不正解
+                , self.kDayMk     # 一日後
+                , self.kWeekMk    # 一週間後
+                , self.kMonthMk   # 一ヶ月後
         ]
 
         # 問題集
@@ -97,6 +97,18 @@ class KanjiWorkSheet:
 
         # 学年毎の漢字を確認する.
         self.__create_list_kanji_by_grade()
+
+        # 学年毎の合計出題数を表示する.
+        for grade in range(self.kGradeRange[0], self.kGradeRange[-1]+1):
+            # 指定した学年の問題を取得する.
+            problem = self.get_problem_with_grade([grade])
+            sum = 0
+            # 履歴から合計出題数を算出する.
+            for hist in problem[self.kHistory].values:
+                sum += len(hist)
+
+            # 学年毎に合計出題数を出力する.
+            self.print_info(str(grade) + '年生: ' + str(sum) + '問')
 
         # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
         return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \
@@ -178,20 +190,30 @@ class KanjiWorkSheet:
         if type(grade) != type([]):
             grade = [grade]
 
+        # 答えに指定した漢字が含まれている問題を抽出する.
         temp = self.worksheet[self.worksheet[self.kAnswer].apply(lambda x: any(char in x for char in kanji))]
-        grade_list = list(range(1, max(grade)+1))
+        grade_list = list(range(1, max(grade) + 1))
         return temp[temp[self.kGrade].isin(grade_list)]
 
     # 指定した学年の漢字のリストを取得する.
     def get_kanji_by_grade_list(self, grade):
         return self.kanji_by_grade_list[grade]
 
+    # 指定した学年の漢字が正解しているか否かを辞書形式で取得する.
+    # 辞書のキーは漢字で、データはTrueが正解、Falseが正解以外
     def get_analysis_correct_kanji_by_grade_dict(self, grade):
+        # 指定した学年の漢字のリストを取得する.
         kanji_list = self.get_kanji_by_grade_list(grade)
         result_dict = {}
 
+        # 指定した学年の漢字だけ処理をする.
         for kanji in kanji_list:
+            # 問題集から指定した答えの問題を取得する.
             problem_list = self.get_problem_with_answer(kanji, grade)
+
+            # 漢字毎に辞書化し、その漢字が正解しているか否かを確認する.
+            # 1つでも正解していれば正解と判断する.
+            # その漢字ではなく、熟語が分からず間違っている可能性があるため.
             result_dict[kanji] = False
             for result in problem_list[self.kResult]:
                 if result == self.kCrctMk:

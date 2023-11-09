@@ -83,6 +83,16 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         """
         self.grade = grade_list
         self.print_info('学年を ' + str(self.grade) + ' に設定しました.')
+        result = []
+        # 学年毎に処理する.
+        for grade in self.grade:
+            result_dict = self.get_analysis_correct_kanji_by_grade_dict(grade)
+            for key, value in result_dict.items():
+                if value == False:
+                    result.append(key)
+
+        self.print_info(str(result))
+        self.print_info(str(len(result)))
 
     # 漢字プリントの出題範囲を取得する.
     def get_grade(self):
@@ -200,7 +210,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
     # self.kanji_worksheetの「答え]を分割し、辞書のキーを作成する。
     def get_answer_kanji_keyword(self):
         target_kanji_problem_list = []
-        target_kanji_answer = self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kAnswer].values
+        target_kanji_answer = self.worksheet.loc[self.kanji_worksheet_idx, self.kAnswer].values
         # 1語ずつ配列に格納する
         target_kanji_answer = target_kanji_answer.tolist()
         for ans in target_kanji_answer:
@@ -218,7 +228,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         flg = False
         self.print_info('問題文中に答えが存在するため、ひらがなに置き換えました.')
         problem_statement_list = ['' for _ in range(self.get_number_of_problem())]
-        for statement, idx, i in zip(self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
+        for statement, idx, i in zip(self.worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
                                    , self.kanji_worksheet_idx
                                    , range(self.get_number_of_problem())):
             for word in statement:
@@ -245,7 +255,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
             if statement != problem_statement_list[i]:
                 self.print_info('Before: ' + statement)
                 self.print_info('After : ' + problem_statement_list[i])
-                self.kanji_worksheet.loc[idx, self.kProblem] = problem_statement_list[i]
+                self.worksheet.loc[idx, self.kProblem] = problem_statement_list[i]
 
     # 不要なルビを問題文から削除する.
     def remove_unnecessary_ruby(self):
@@ -253,7 +263,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         ruby_flg = False
         self.print_info('問題文中に不要なルビがあるため、削除しました.')
         problem_statement_list = ['' for _ in range(self.get_number_of_problem())]
-        for statement, idx, i in zip(self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
+        for statement, idx, i in zip(self.worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
                 , self.kanji_worksheet_idx
                 , range(self.get_number_of_problem())):
             for word in statement:
@@ -283,7 +293,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
             if statement != problem_statement_list[i]:
                 self.print_info('Before: ' + statement)
                 self.print_info('After : ' + problem_statement_list[i])
-                self.kanji_worksheet.loc[idx, self.kProblem] = problem_statement_list[i]
+                self.worksheet.loc[idx, self.kProblem] = problem_statement_list[i]
 
     # 条件に該当する問題のインデックスを返す.
     def get_kanji_worksheet_index(self, result, sort=False, days=-1):
@@ -291,7 +301,10 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 2時間オフセットをいれる。
         now_time = self.create_date + datetime.timedelta(hours=2)
 
-        tmp_list = self.kanji_worksheet[self.kanji_worksheet[self.kResult] == result]
+        if result == self.kCrctMk or result == self.kNotMk:
+            tmp_list = self.kanji_worksheet[self.kanji_worksheet[self.kResult] == result]
+        else:
+            tmp_list = self.worksheet[self.worksheet[self.kResult] == result]
 
         # 最終更新日の昇順で更新する指定がある場合は、ソートを行う.
         if sort:
@@ -352,7 +365,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         return not_duplicate, duplicate
 
     # 答えの漢字が重複している最終更新日を作成する.
-    def create_long_time_no_question_dict(self, ans_list, date_list, days=14):
+    def create_long_time_no_question_dict(self, ans_list, date_list, days=30):
         date_map = {}
 
         # この要素数はself.kanji_worksheetのインデックスとは違う.
@@ -466,7 +479,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # Excelで読み込んだ時に妙な解釈をされ、形式が壊れてしまうため、シングルクォートで囲っておく.
         now = "'" + str(pd.to_datetime(datetime.datetime.today())) + "'"
         # 選出した問題の最終日を更新する.
-        self.kanji_worksheet.loc[self.kanji_worksheet_idx, self.kLastUpdate] = now
+        self.worksheet.loc[self.kanji_worksheet_idx, self.kLastUpdate] = now
 
         return self.kanji_worksheet
 
@@ -535,7 +548,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 出題する問題が決まったため、最終更新日を更新する.
         self.kanji_worksheet = self.set_lastupdate_kanji_worksheet()
         # 問題集を抽出した物だけにする.
-        self.kanji_worksheet = self.kanji_worksheet.loc[self.kanji_worksheet_idx, :]
+        self.kanji_worksheet = self.worksheet.loc[self.kanji_worksheet_idx, :]
 
         return len(err_msg) != 0, err_msg
 
@@ -564,8 +577,8 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 最後の出題から30日以上経過した漢字の辞書を作成.
         #tmp2_df = pd.DataFrame()
         self.old_kanji_dict = self.create_long_time_no_question_dict(
-                  self.kanji_worksheet[self.kAnswer].tolist()
-                , self.kanji_worksheet[self.kLastUpdate].tolist()
+                  self.worksheet[self.kAnswer].tolist()
+                , self.worksheet[self.kLastUpdate].tolist()
         )
         #print("==================================================================")
         #print(self.old_kanji_dict)
@@ -799,7 +812,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
             , self.get_grade()
             , self.get_create_date()
             , self.get_number_of_problem()
-            , self.kanji_worksheet[self.kProblem]
+            , self.worksheet[self.kProblem]
             , self.kanji_worksheet_idx)
 
         # PDFを作成する.

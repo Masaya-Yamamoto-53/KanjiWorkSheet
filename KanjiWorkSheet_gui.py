@@ -20,7 +20,7 @@ class KanjiWorkSheet_gui:
         self.KanjiWorkSheet = KanjiWorkSheet_prob()
         self.Root = tk.Tk()
         self.Root.title(u'漢字プリント作成ツール')
-        self.Root.geometry('620x560')
+        self.Root.geometry('620x660')
         self.Root.resizable(False, False)
 
         self.kStudentName = 'Name'
@@ -32,7 +32,17 @@ class KanjiWorkSheet_gui:
         self.kJS4 = '小学四年生'
         self.kJS5 = '小学五年生'
         self.kJS6 = '小学六年生'
-        self.kGradeKeyList = [self.kJS1, self.kJS2, self.kJS3, self.kJS4, self.kJS5, self.kJS6]
+        self.kJH1 = '中学一年生'
+        self.kJH2 = '中学二年生'
+        self.kJH3 = '中学三年生'
+        self.kHS1 = '高校一年生'
+        self.kHS2 = '高校二年生'
+        self.kHS3 = '高校三年生'
+        self.grade_value_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        self.kGradeKeyList = [self.kJS1, self.kJS2, self.kJS3, self.kJS4, self.kJS5, self.kJS6,
+                              self.kJH1, self.kJH2, self.kJH3, self.kHS1, self.kHS2, self.kHS3
+                              ]
+
         self.kMDRW = '復習'
         self.kMDTR = '練習'
         self.kMDWK = '苦手'
@@ -42,6 +52,9 @@ class KanjiWorkSheet_gui:
                              , self.KanjiWorkSheet.kMDTR
                              , self.KanjiWorkSheet.kMDWK]
         self.kTotal = '　　　合計'
+        self.kGradeReportList = [self.kJS1, self.kJS2, self.kJS3, self.kJS4, self.kJS5, self.kJS6,
+#                                 self.kJH1, self.kJH2, self.kJH3, self.kHS1, self.kHS2, self.kHS3,
+                                 self.kTotal]
 
         self.path_of_setting_file = './.setting'
         self.path_of_worksheet = ''
@@ -177,7 +190,7 @@ class KanjiWorkSheet_gui:
     def create_widget_problem_region(self, root, row, column):
         # 出題範囲選択ラベルフレーム
         self.ProblemRegionFrame = tk.LabelFrame(root, text='出題範囲選択')
-        self.ProblemRegionFrame.grid(row=row, column=column, sticky=tk.W)
+        self.ProblemRegionFrame.grid(row=row, column=column, sticky=tk.S+tk.W)
 
         # 出題範囲選択フレーム左側
         self.ProblemRegionFrame_Lft = tk.Frame(self.ProblemRegionFrame, padx=0, pady=0)
@@ -192,6 +205,12 @@ class KanjiWorkSheet_gui:
                   self.ProblemRegionFrame_Lft
                 , self.ProblemRegionFrame_Lft
                 , self.ProblemRegionFrame_Lft
+                , self.ProblemRegionFrame_Lft
+                , self.ProblemRegionFrame_Lft
+                , self.ProblemRegionFrame_Lft
+                , self.ProblemRegionFrame_Rgt
+                , self.ProblemRegionFrame_Rgt
+                , self.ProblemRegionFrame_Rgt
                 , self.ProblemRegionFrame_Rgt
                 , self.ProblemRegionFrame_Rgt
                 , self.ProblemRegionFrame_Rgt
@@ -363,18 +382,13 @@ class KanjiWorkSheet_gui:
         # 出題内容
         #self.create_widget_report_OutInfo(self.OutInfoFrame)
 
-        arr = [
-                  self.kJS1, self.kJS2, self.kJS3
-                , self.kJS4, self.kJS5, self.kJS6
-                , self.kTotal
-        ]
         # レポート
-        self.create_widget_report_Problem(self.Report_ProblemFrame, arr, u'出題状況')
-        self.create_widget_report_Correct(self.Report_CorrectFrame, arr, u'　正解')
-        self.create_widget_report_InCorrect(self.Report_InCorrectFrame, arr, u'不正解')
-        self.create_widget_report_Day(self.Report_DayFrame, arr, u'1日後')
-        self.create_widget_report_Week(self.Report_WeekFrame, arr, u'1週間後')
-        self.create_widget_report_Month(self.Report_MonthFrame, arr, u'1ヶ月後')
+        self.create_widget_report_Problem(self.Report_ProblemFrame, self.kGradeReportList, u'出題状況')
+        self.create_widget_report_Correct(self.Report_CorrectFrame, self.kGradeReportList, u'　正解')
+        self.create_widget_report_InCorrect(self.Report_InCorrectFrame, self.kGradeReportList, u'不正解')
+        self.create_widget_report_Day(self.Report_DayFrame, self.kGradeReportList, u'1日後')
+        self.create_widget_report_Week(self.Report_WeekFrame, self.kGradeReportList, u'1週間後')
+        self.create_widget_report_Month(self.Report_MonthFrame, self.kGradeReportList, u'1ヶ月後')
 
     # レポート:出題数用のウィジェット作成
     def create_widget_report_OutInfo(self, root):
@@ -428,14 +442,14 @@ class KanjiWorkSheet_gui:
             tmp_label1.pack(side=tk.LEFT)
 
             # Left Entry
-            tmp_entry1 = tk.Entry(tmp_frame, width=8, state=tk.DISABLED)
+            tmp_entry1 = tk.Entry(tmp_frame, width=9, state=tk.DISABLED)
             tmp_entry1.pack(side=tk.LEFT)
 
             tmp_label2 = tk.Label(tmp_frame, text='/')
             tmp_label2.pack(side=tk.LEFT)
 
             # Right Entry
-            tmp_entry2 = tk.Entry(tmp_frame, width=8, state=tk.DISABLED)
+            tmp_entry2 = tk.Entry(tmp_frame, width=9, state=tk.DISABLED)
             tmp_entry2.pack(side=tk.LEFT)
 
             self.Report_Problem_Frame[text] = tmp_frame
@@ -464,7 +478,7 @@ class KanjiWorkSheet_gui:
             tmp_label1 = tk.Label(tmp_frame, text='　')
             tmp_label1.pack(side=tk.LEFT)
 
-            tmp_entry1 = tk.Entry(tmp_frame, width=8, state=tk.DISABLED)
+            tmp_entry1 = tk.Entry(tmp_frame, width=9, state=tk.DISABLED)
             tmp_entry1.pack(side=tk.LEFT)
 
             self.Report_Correct_Frame[text] = tmp_frame
@@ -491,7 +505,7 @@ class KanjiWorkSheet_gui:
             tmp_label1 = tk.Label(tmp_frame, text='')
             tmp_label1.pack(side=tk.LEFT)
 
-            tmp_entry1 = tk.Entry(tmp_frame, width=8, state=tk.DISABLED)
+            tmp_entry1 = tk.Entry(tmp_frame, width=9, state=tk.DISABLED)
             tmp_entry1.pack(side=tk.LEFT)
 
             self.Report_InCorrect_Frame[text] = tmp_frame
@@ -518,7 +532,7 @@ class KanjiWorkSheet_gui:
             tmp_label1 = tk.Label(tmp_frame, text='')
             tmp_label1.pack(side=tk.LEFT)
 
-            tmp_entry1 = tk.Entry(tmp_frame, width=8, state=tk.DISABLED)
+            tmp_entry1 = tk.Entry(tmp_frame, width=9, state=tk.DISABLED)
             tmp_entry1.pack(side=tk.LEFT)
 
             self.Report_Day_Frame[text] = tmp_frame
@@ -545,7 +559,7 @@ class KanjiWorkSheet_gui:
             tmp_label1 = tk.Label(tmp_frame, text='')
             tmp_label1.pack(side=tk.LEFT)
 
-            tmp_entry1 = tk.Entry(tmp_frame, width=8, state=tk.DISABLED)
+            tmp_entry1 = tk.Entry(tmp_frame, width=9, state=tk.DISABLED)
             tmp_entry1.pack(side=tk.LEFT)
 
             self.Report_Week_Frame[text] = tmp_frame
@@ -572,7 +586,7 @@ class KanjiWorkSheet_gui:
             tmp_label1 = tk.Label(tmp_frame, text='')
             tmp_label1.pack(side=tk.LEFT)
 
-            tmp_entry1 = tk.Entry(tmp_frame, width=8, state=tk.DISABLED)
+            tmp_entry1 = tk.Entry(tmp_frame, width=9, state=tk.DISABLED)
             tmp_entry1.pack(side=tk.LEFT)
 
             self.Report_Month_Frame[text] = tmp_frame
@@ -634,6 +648,8 @@ class KanjiWorkSheet_gui:
                     , self.kNumber
                     , self.kJS1, self.kJS2, self.kJS3
                     , self.kJS4, self.kJS5, self.kJS6
+                    , self.kJH1, self.kJH2, self.kJH3
+                    , self.kHS1, self.kHS2, self.kHS3
                     , self.kMode
             ]
             # 空の .setting ファイルを新規作成
@@ -849,10 +865,8 @@ class KanjiWorkSheet_gui:
     # 処理概要:
     # チェックボタンの値をリスト化し, 設定する.
     def set_grade(self):
-        grade_value_list = [1, 2, 3, 4, 5, 6]
-
         grade_list = []
-        for key, grade in zip(self.kGradeKeyList, grade_value_list):
+        for key, grade in zip(self.kGradeKeyList, self.grade_value_list):
             checked = self.get_selected_student_grade(key)
             # チェックしている時
             if checked == True:
@@ -1115,19 +1129,14 @@ class KanjiWorkSheet_gui:
 
     def update_report(self, diff=0):
         """レポートを更新する."""
-        key_list = [
-                  self.kJS1, self.kJS2, self.kJS3
-                , self.kJS4, self.kJS5, self.kJS6
-                , self.kTotal
-        ]
-        grade_list = [[1], [2], [3], [4], [5], [6], [1, 2, 3, 4, 5, 6]]
+        grade_list = [[1], [2], [3], [4], [5], [6], [7], [8], [9], [1, 2, 3, 4, 5, 6, 7, 8, 9]]
         self.KanjiWorkSheet.print_info('レポートを更新する.')
 
         (err_num, _, _, _) = self.KanjiWorkSheet.load_worksheet(self.SelectWorksheetPath_Value.get())
         if err_num != 0:
             return
 
-        for key, grade in zip(key_list, grade_list):
+        for key, grade in zip(self.kGradeReportList, grade_list):
             self.enable_report_tolnum_entry(key)
             self.enable_report_outnum_entry(key)
             self.enable_report_crctnum_entry(key)
@@ -1220,6 +1229,12 @@ class KanjiWorkSheet_gui:
                         , self.kJS4: [False]
                         , self.kJS5: [False]
                         , self.kJS6: [False]
+                        , self.kJH1: [False]
+                        , self.kJH2: [False]
+                        , self.kJH3: [False]
+                        , self.kHS1: [False]
+                        , self.kHS2: [False]
+                        , self.kHS3: [False]
                         , self.kMode: [2]
                 })
                 # 設定ファイルにデータを結合し, インデックスを更新する.
