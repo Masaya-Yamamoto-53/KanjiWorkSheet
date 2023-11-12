@@ -14,13 +14,15 @@ import tkinter.filedialog as filedialog
 from functools import partial
 
 from KanjiWorkSheet_prob import KanjiWorkSheet_prob
+from UserSettings import UserSettings
 
 class KanjiWorkSheet_gui:
     def __init__(self):
         self.KanjiWorkSheet = KanjiWorkSheet_prob()
+        self.UserSettings = UserSettings()
         self.Root = tk.Tk()
         self.Root.title(u'漢字プリント作成ツール')
-        self.Root.geometry('620x660')
+        self.Root.geometry('620x580')
         self.Root.resizable(False, False)
 
         self.kStudentName = 'Name'
@@ -32,36 +34,33 @@ class KanjiWorkSheet_gui:
         self.kJS4 = '小学四年生'
         self.kJS5 = '小学五年生'
         self.kJS6 = '小学六年生'
-        self.kJH1 = '中学一年生'
-        self.kJH2 = '中学二年生'
-        self.kJH3 = '中学三年生'
-        self.kHS1 = '高校一年生'
-        self.kHS2 = '高校二年生'
-        self.kHS3 = '高校三年生'
-        self.grade_value_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-        self.kGradeKeyList = [self.kJS1, self.kJS2, self.kJS3, self.kJS4, self.kJS5, self.kJS6,
-                              self.kJH1, self.kJH2, self.kJH3, self.kHS1, self.kHS2, self.kHS3
-                              ]
+        self.grade_value_list = [1, 2, 3, 4, 5, 6]
 
         self.kMDRW = '復習'
         self.kMDTR = '練習'
         self.kMDWK = '苦手'
         self.kMode = '出題形式'
-        self.kModeKeyList = [self.kMDRW, self.kMDTR, self.kMDWK]
-        self.kModeValueList = [self.KanjiWorkSheet.kMDRW
-                             , self.KanjiWorkSheet.kMDTR
-                             , self.KanjiWorkSheet.kMDWK]
+        self.kModeValueList = [
+              self.KanjiWorkSheet.kMDRW
+            , self.KanjiWorkSheet.kMDTR
+            , self.KanjiWorkSheet.kMDWK
+        ]
         self.kTotal = '　　　合計'
-        self.kGradeReportList = [self.kJS1, self.kJS2, self.kJS3, self.kJS4, self.kJS5, self.kJS6,
-#                                 self.kJH1, self.kJH2, self.kJH3, self.kHS1, self.kHS2, self.kHS3,
-                                 self.kTotal]
+        self.kGradeReportList = [
+              self.UserSettings.kJS1
+            , self.UserSettings.kJS2
+            , self.UserSettings.kJS3
+            , self.UserSettings.kJS4
+            , self.UserSettings.kJS5
+            , self.UserSettings.kJS6
+            , self.kTotal
+        ]
 
-        self.path_of_setting_file = './.setting'
         self.path_of_worksheet = ''
         self.PathOfLogFile = ''
 
         # 設定ファイルを読み込む
-        self.load_setting_file()
+        self.UserSettings.load_setting_file()
         # ウィジェットを作成する.
         self.create_widget()
         self.Root.mainloop()
@@ -135,11 +134,11 @@ class KanjiWorkSheet_gui:
 
         # 生徒選択コンボボックス
         # 生徒が存在しない場合は""にする
-        if len(self.setting[self.kStudentName]) == 0:
+        if self.UserSettings.get_setting_num() == 0:
             values = ''
         else:
             # NumPy配列(ndarry)をリストに変換し格納する.
-            values = self.setting[self.kStudentName].values.tolist()
+            values = self.UserSettings.get_student_name_list()
 
         self.SelectStudentFrame_Combobox_Value = tk.StringVar()
         self.SelectStudentFrame_Combobox = tk.ttk.Combobox(
@@ -205,19 +204,13 @@ class KanjiWorkSheet_gui:
                   self.ProblemRegionFrame_Lft
                 , self.ProblemRegionFrame_Lft
                 , self.ProblemRegionFrame_Lft
-                , self.ProblemRegionFrame_Lft
-                , self.ProblemRegionFrame_Lft
-                , self.ProblemRegionFrame_Lft
-                , self.ProblemRegionFrame_Rgt
-                , self.ProblemRegionFrame_Rgt
-                , self.ProblemRegionFrame_Rgt
                 , self.ProblemRegionFrame_Rgt
                 , self.ProblemRegionFrame_Rgt
                 , self.ProblemRegionFrame_Rgt
         ]
         self.ProblemRegionFrame_Checkbutton_Value = {}
         self.ProblemRegionFrame_Checkbutton = {}
-        for key, frame in zip(self.kGradeKeyList, frame_list):
+        for key, frame in zip(self.UserSettings.kGradeKeyList, frame_list):
             # チェックボックスの値を作成する.
             self.ProblemRegionFrame_Checkbutton_Value[key] = tk.BooleanVar(value=False)
 
@@ -260,7 +253,7 @@ class KanjiWorkSheet_gui:
         self.SelectModeFrameRadiobutton_Value = {}
         self.SelectModeFrame_Radiobutton = {}
         self.radio_value = tk.IntVar(value=-1)
-        for key, value in zip(self.kModeKeyList, self.kModeValueList):
+        for key, value in zip(self.UserSettings.kModeKeyList, self.kModeValueList):
             # チェックボックスの左側を作成する.
             self.SelectModeFrame_Radiobutton[key] = tk.Radiobutton(
                       self.SelectModeFrame
@@ -630,44 +623,6 @@ class KanjiWorkSheet_gui:
         )
         self.Analysis_Button.pack(side=tk.LEFT, padx=5)
 
-    # 設定ファイルを読み込む.
-    def load_setting_file(self):
-        # 設定ファイルを読み込む
-        try:
-            # .Setting ファイルを開く.
-            self.setting = pd.read_csv(
-                      self.path_of_setting_file
-                    , sep=','
-                    , encoding='shift-jis'
-            )
-        except FileNotFoundError:
-            # .setting ファイルがない場合は新規作成する.
-            columns = [
-                      self.kStudentName
-                    , self.kProblemPath
-                    , self.kNumber
-                    , self.kJS1, self.kJS2, self.kJS3
-                    , self.kJS4, self.kJS5, self.kJS6
-                    , self.kJH1, self.kJH2, self.kJH3
-                    , self.kHS1, self.kHS2, self.kHS3
-                    , self.kMode
-            ]
-            # 空の .setting ファイルを新規作成
-            self.setting = pd.DataFrame(columns=columns)
-            # 設定ファイルを書き込む.
-            # 設定ファイルに保存する.
-            self.save_setting_file()
-
-    # 設定ファイルを書き込む.
-    def save_setting_file(self):
-        self.setting.to_csv(
-                  self.path_of_setting_file
-                , sep=','
-                , index=False
-                , encoding='shift-jis'
-        )
-        self.KanjiWorkSheet.print_info(self.path_of_setting_file + ' を保存しました.')
-
     # ログファイルのパスを取得する.
     def get_path_of_log(self):
         name = self.SelectStudentFrame_Combobox_Value.get()
@@ -773,12 +728,12 @@ class KanjiWorkSheet_gui:
 
     # 「出題範囲選択」のチェックボタンを有効にする.
     def enable_grade_checkbutton(self):
-        for key in self.kGradeKeyList:
+        for key in self.UserSettings.kGradeKeyList:
             self.ProblemRegionFrame_Checkbutton[key]['state'] = tk.NORMAL
 
     # 「出題範囲選択」のチェックボタンを無効にする.
     def disable_grade_checkbutton(self):
-        for key in self.kGradeKeyList:
+        for key in self.UserSettings.kGradeKeyList:
             self.ProblemRegionFrame_Checkbutton[key]['state'] = tk.DISABLED
 
     # 「出題数」のエントリーを有効にする.
@@ -791,12 +746,12 @@ class KanjiWorkSheet_gui:
 
     # 「出題モード」のラジオボタンを有効にする.
     def enable_mode_Radiobutton(self):
-        for key in self.kModeKeyList:
+        for key in self.UserSettings.kModeKeyList:
             self.SelectModeFrame_Radiobutton[key]['state'] = tk.NORMAL
 
     # 「出題モード」のラジオボタンを無効にする.
     def disable_mode_Radiobutton(self):
-        for key in self.kModeKeyList:
+        for key in self.UserSettings.kModeKeyList:
             self.SelectModeFrame_Radiobutton[key]['state'] = tk.DISABLED
 
     # 「回答」のエントリーを有効にする.
@@ -852,7 +807,7 @@ class KanjiWorkSheet_gui:
     # チェックボタンをクリアし, チェックボタンを無効にする.
     # チェックボタンの値をリスト化し, 設定する.
     def del_grade(self):
-        for key in self.kGradeKeyList:
+        for key in self.UserSettings.kGradeKeyList:
             # チェックボタンの値をすべてFalseにする.
             self.set_selected_student_grade(key, False)
             # 「出題範囲選択」のチェックボタンを無効にする.
@@ -866,7 +821,7 @@ class KanjiWorkSheet_gui:
     # チェックボタンの値をリスト化し, 設定する.
     def set_grade(self):
         grade_list = []
-        for key, grade in zip(self.kGradeKeyList, self.grade_value_list):
+        for key, grade in zip(self.UserSettings.kGradeKeyList, self.grade_value_list):
             checked = self.get_selected_student_grade(key)
             # チェックしている時
             if checked == True:
@@ -1214,35 +1169,13 @@ class KanjiWorkSheet_gui:
         else:
             # 「生徒登録」エントリーに記入した名称が既に設定ファイルに登録してある場合,
             # メッセージボックスで既に登録済みであることを通知する.
-            if len(self.setting[self.setting[self.kStudentName] == name]) > 0:
+            if self.UserSettings.chk_registered_student(name):
                 tk.messagebox.showerror('Error', '既に登録済みです.')
             # 生徒を設定ファイルに登録する.
             else:
                 self.KanjiWorkSheet.print_info('生徒(' + name + ')の新規登録を行いました.')
-                pd_data = pd.DataFrame({
-                          self.kStudentName: [name]
-                        , self.kProblemPath: ['']
-                        , self.kNumber: ['20']
-                        , self.kJS1: [False]
-                        , self.kJS2: [False]
-                        , self.kJS3: [False]
-                        , self.kJS4: [False]
-                        , self.kJS5: [False]
-                        , self.kJS6: [False]
-                        , self.kJH1: [False]
-                        , self.kJH2: [False]
-                        , self.kJH3: [False]
-                        , self.kHS1: [False]
-                        , self.kHS2: [False]
-                        , self.kHS3: [False]
-                        , self.kMode: [2]
-                })
-                # 設定ファイルにデータを結合し, インデックスを更新する.
-                self.setting = pd.concat([self.setting, pd_data], axis=0)
-                self.setting = self.setting.reset_index(drop=True)
-
-                # 設定ファイルに保存する.
-                self.save_setting_file()
+                # 生徒を設定ファイルに登録する.
+                self.UserSettings.register_student(name)
 
                 # 生徒を設定ファイルに登録した後に, 登録できたことを伝えるために「生徒登録」エントリーを空欄にする.
                 # 煩わしいため, メッセージボックスは使用しない.
@@ -1254,9 +1187,8 @@ class KanjiWorkSheet_gui:
         self.KanjiWorkSheet.print_info('Call: Event_UpdateStudent')
         # 生徒の登録がある場合は, 設定ファイルから生徒の名前を取得して,
         # 「生徒選択」コンボボックスのメニューに設定する.
-        if len(self.setting[self.kStudentName]) != 0:
-            values = self.setting[self.kStudentName].values
-            self.set_selected_student_list(values.tolist())
+        if self.UserSettings.get_setting_num() != 0:
+            self.set_selected_student_list(self.UserSettings.get_student_name_list())
         # 生徒の登録がない場合は, 「生徒選択」コンボボックスのメニューを空欄にする.
         else:
             self.set_selected_student_list('')
@@ -1272,9 +1204,6 @@ class KanjiWorkSheet_gui:
         ################################################################################
         # 名前が有効なとき
         if len(name) > 0:
-            # 選択した生徒の情報を検索し, 設定ファイルのインデックスを取得する.
-            i = self.setting[self.setting[self.kStudentName] == name].index[0]
-
             # 「削除」ボタンを有効にする.
             self.enable_delete_student_button()
 
@@ -1282,10 +1211,7 @@ class KanjiWorkSheet_gui:
             self.enable_select_button()
 
             # 選択した生徒の問題集のパスを取得し、登録する.
-            path = str(self.setting.iloc[i, self.setting.columns.get_loc(self.kProblemPath)])
-            # Nanの場合は空欄にする.
-            if path == 'nan':
-                path = ''
+            path = self.UserSettings.get_path_of_problem(name)
             self.set_selected_worksheet_path(path)
 
             ################################################################################
@@ -1313,11 +1239,11 @@ class KanjiWorkSheet_gui:
                     tk.messagebox.showerror('Error', msg)
 
             # 学年の設定を反映する.
-            for key in self.kGradeKeyList:
+            for key in self.UserSettings.kGradeKeyList:
                 # 「出題範囲選択」のチェックボタンを有効にする.
                 self.enable_grade_checkbutton()
                 # 設定ファイルからチェックボタンの設定を取得し, 反映する.
-                value = str(self.setting.iloc[i, self.setting.columns.get_loc(key)])
+                value = str(self.UserSettings.get_grade_value(name, key))
                 self.set_selected_student_grade(key, value)
 
             # 学年の情報を取得し, 設定する.
@@ -1326,12 +1252,12 @@ class KanjiWorkSheet_gui:
             # 「出題数」のエントリーを有効にする.
             self.enable_number_of_problem_entry()
             # 選択した生徒の出題数を設定する.
-            self.set_number_of_problem(self.setting.iloc[i, self.setting.columns.get_loc(self.kNumber)])
+            self.set_number_of_problem(self.UserSettings.get_number_of_problem(name))
 
             # 「出題モード」のエントリーを有効にする.
             self.enable_mode_Radiobutton()
             # 設定ファイルからラジオボタンの設定を取得し, 反映する.
-            value = str(self.setting.iloc[i, self.setting.columns.get_loc(self.kMode)])
+            value = self.UserSettings.get_mode(name)
             self.set_selected_student_mode(value)
 
             # 「出題モード」を設定する.
@@ -1430,10 +1356,10 @@ class KanjiWorkSheet_gui:
             self.set_selected_worksheet_path(path)
 
             # 登録者の情報を更新する
-            i = self.setting[self.setting[self.kStudentName] == self.get_selected_student_name()].index[0]
-            self.setting.iloc[i, self.setting.columns.get_loc(self.kProblemPath)] = path
+            name = self.get_selected_student_name()
+            self.UserSettings.set_path_of_problem(name, path)
             # 設定ファイルに保存する.
-            self.save_setting_file()
+            self.UserSettings.save_setting_file()
 
             ################################################################################
             # 登録した問題集のパスを取得し, 問題集を読み込む.
@@ -1473,14 +1399,14 @@ class KanjiWorkSheet_gui:
     def Event_CheckButton(self):
         self.KanjiWorkSheet.print_info('Call: Event_CheckButton')
         # 登録者の要素数を取得する.
-        i = self.setting[self.setting[self.kStudentName] == self.get_selected_student_name()].index[0]
+        name = self.get_selected_student_name()
 
         # 各チェックボタンの値を取得し, 登録者の情報を更新する.
-        for key in self.kGradeKeyList:
-            self.setting.iloc[i, self.setting.columns.get_loc(key)] = self.get_selected_student_grade(key)
+        for key in self.UserSettings.kGradeKeyList:
+            self.UserSettings.set_grade_value(name, key, self.get_selected_student_grade(key))
 
         # 設定ファイルに保存する.
-        self.save_setting_file()
+        self.UserSettings.save_setting_file()
 
         # 学年の情報を取得し, 設定する.
         self.set_grade()
@@ -1488,14 +1414,14 @@ class KanjiWorkSheet_gui:
     def Event_RadioButton(self):
         self.KanjiWorkSheet.print_info('Call: Event_RadioButton')
 
-        # 登録者の要素数を取得する.
-        i = self.setting[self.setting[self.kStudentName] == self.get_selected_student_name()].index[0]
+        # 登録者を取得する.
+        name = self.get_selected_student_name()
 
         # ラジオボタンの値を取得し, 登録者の情報を更新する.
-        self.setting.iloc[i, self.setting.columns.get_loc(self.kMode)] = self.get_selected_student_mode()
+        self.UserSettings.set_mode(name, self.get_selected_student_mode())
 
         # 設定ファイルに保存する.
-        self.save_setting_file()
+        self.UserSettings.save_setting_file()
 
         # 出題モードを取得し, 設定する.
         self.set_mode()
@@ -1517,12 +1443,12 @@ class KanjiWorkSheet_gui:
         self.KanjiWorkSheet.set_number_of_problem(num)
 
         # 選択している生徒が設定ファイルに存在しているとき, 設定ファイルに出題数を保存する.
-        if len(self.setting[self.setting[self.kStudentName] == self.get_selected_student_name()]) != 0:
-            i = self.setting[self.setting[self.kStudentName] == self.KanjiWorkSheet.get_student_name()].index[0]
-            self.setting.iloc[i, self.setting.columns.get_loc(self.kNumber)] = num
+        name = self.get_selected_student_name()
+        if self.UserSettings.chk_registered_student(name):
+            self.UserSettings.set_number_of_problem(name, num)
 
             # 設定ファイルを保存する.
-            self.save_setting_file()
+            self.UserSettings.save_setting_file()
 
     # イベント発生条件:「採点」のボタンを押したとき
     # 処理概要:ボタンが押されたとき, ボタンを○または, ×に切り替える.

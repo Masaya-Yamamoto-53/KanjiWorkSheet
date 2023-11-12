@@ -24,7 +24,7 @@ class KanjiWorkSheet:
         ]
 
         self.kGrade = self.kFileColumns[0]
-        self.kGradeRange = [1, 12]  # 学年の最小値と最大値(上下限のチェックに使用)
+        self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
         self.kProblem = self.kFileColumns[1]
         self.kAnswer = self.kFileColumns[2]
         self.kNumber = self.kFileColumns[3]
@@ -88,6 +88,10 @@ class KanjiWorkSheet:
             # データを初期化し, エラーメッセージを出力する.
             self.worksheet = pd.DataFrame()
             opn_err_msg.append(self.print_error('問題集が存在しません.'))
+
+            # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
+            return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \
+                 , len(fmt_err_msg[0:5]) != 0, fmt_err_msg[0:5]
 
         # 結果がself.report_key_list以外の場合は、self.kNotMkに置き換える。
         self.__replace_undef_char_with_NotMk()
