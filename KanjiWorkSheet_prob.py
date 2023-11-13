@@ -91,9 +91,6 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
                 if value == False:
                     result.append(key)
 
-        self.print_info(str(result))
-        self.print_info(str(len(result)))
-
     # 漢字プリントの出題範囲を取得する.
     def get_grade(self):
         """漢字プリントの出題範囲を取得する."""

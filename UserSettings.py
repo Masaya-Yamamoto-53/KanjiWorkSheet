@@ -6,7 +6,6 @@
 import pandas as pd
 
 class UserSettings:
-    ########################################################################################
     def __init__(self):
         self.kStudentName = 'Name'
 
@@ -34,7 +33,7 @@ class UserSettings:
         self.kModeReview = 0  # 復習モード
         self.kModeTrain = 1  # 練習モード
         self.kModeWeak = 2  # 苦手モード
-        self.kModeKeyList = [
+        self.kModeValueList = [
               self.kModeReview
             , self.kModeTrain
             , self.kModeWeak
@@ -61,7 +60,6 @@ class UserSettings:
         # エンコーディング
         self.encoding = 'shift-jis'
 
-    ########################################################################################
     # 設定ファイルを読み込む.
     def load_setting_file(self):
         # 設定ファイルを読み込む.
@@ -79,13 +77,11 @@ class UserSettings:
             # 空の .setting ファイルを設定ファイルを保存する.
             self.save_setting_file()
 
-    ########################################################################################
     # 設定ファイルを書き込む.
     def save_setting_file(self):
         wrt_err_msg = []
 
         # 設定ファイルを書き込む.
-        print(self.setting_data)
         try:
             self.setting_data.to_csv(
                   self.path_of_setting_file
@@ -100,7 +96,6 @@ class UserSettings:
 
         return len(wrt_err_msg) != 0, wrt_err_msg
 
-    ########################################################################################
     # 生徒を設定ファイルに登録する.
     def register_student(self, name):
         pd_data = pd.DataFrame({
@@ -122,31 +117,32 @@ class UserSettings:
         # 設定ファイルに保存する.
         self.save_setting_file()
 
-    ########################################################################################
+    def delete_student(self, name):
+        # 設定ファイルの該当データを削除する.
+        i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
+        self.setting_data = self.setting_data.drop(i)
+        self.setting_data = self.setting_data.reset_index(drop=True)
+
     # 生徒の一覧を取得する.
     def get_student_name_list(self):
         return self.setting_data[self.kStudentName].values.tolist()
 
-    ########################################################################################
     # 生徒が登録済みか否かを確認する.
     def chk_registered_student(self, name):
-        if name in self.setting_data[self.kStudentName]:
+        if name in self.setting_data[self.kStudentName].values:
             return True
         else:
             return False
 
-    ########################################################################################
     # 設定の行を取得する.
     def get_setting_num(self):
         return len(self.setting_data)
 
-    ########################################################################################
     # 問題集のパスを設定する.
     def set_path_of_problem(self, name, path):
         i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
         self.setting_data.iloc[i, self.setting_data.columns.get_loc(self.kProblemPath)] = path
 
-    ########################################################################################
     # 問題集のパスを取得する.
     def get_path_of_problem(self, name):
         path = str(self.setting_data[self.setting_data[self.kStudentName] == name][self.kProblemPath].values[0])
@@ -155,38 +151,40 @@ class UserSettings:
             path = ''
         return path
 
-    ########################################################################################
     # 出題数を設定する.
     def set_number_of_problem(self, name, num):
         i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
         self.setting_data.iloc[i, self.setting_data.columns.get_loc(self.kNumber)] = num
 
-    ########################################################################################
     # 出題数を取得する.
     def get_number_of_problem(self, name):
-        print(name)
         num = self.setting_data[self.setting_data[self.kStudentName] == name][self.kNumber].values[0]
-        print(num)
         return num
 
-    ########################################################################################
     # 学年の設定値を設定する.
     def set_grade_value(self, name, grade_key, value):
         i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
         self.setting_data.iloc[i, self.setting_data.columns.get_loc(grade_key)] = value
 
-    ########################################################################################
     # 学年の設定値を取得する.
     def get_grade_value(self, name, grade_key):
         return self.setting_data[self.setting_data[self.kStudentName] == name][grade_key].values[0]
 
-    ########################################################################################
+    def get_grade_list(self, name):
+        grade_list = []
+        grade = 1
+        for key in self.kGradeKeyList:
+            if self.setting_data[self.setting_data[self.kStudentName] == name][key].values[0]:
+                grade_list.append(grade)
+            grade += 1
+
+        return grade_list
+
     # 出題形式を設定する.
     def set_mode(self, name, mode):
         i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
         self.setting_data.iloc[i, self.setting_data.columns.get_loc(self.kMode)] = mode
 
-    ########################################################################################
     # 出題形式を取得する.
     def get_mode(self, name):
         return self.setting_data[self.setting_data[self.kStudentName] == name][self.kMode].values[0]
