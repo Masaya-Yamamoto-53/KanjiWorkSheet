@@ -3,14 +3,8 @@
 # Released under the MIT license.
 # see https://opensource.org/licenses/MIT (英語)
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
-import os
-import subprocess
 
 import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.filedialog as filedialog
-
-from functools import partial
 
 from KanjiWorkSheet_prob import KanjiWorkSheet_prob
 from Debug import Debug
@@ -26,7 +20,7 @@ from WidgetSelectMode import WidgetSelectMode
 from WidgetScoring import WidgetScoring
 from WidgetReport import WidgetReport
 
-from LogFile import LogFile
+from CreateFilePath import CreateFilePath
 
 
 class KanjiWorkSheet_gui:
@@ -92,7 +86,7 @@ class KanjiWorkSheet_gui:
         self.wg_report = WidgetReport(
             self.Debug, self.UserSettings, self.PrintReportFrame, row=0, column=0)
         # ログファイル
-        self.LogFile = LogFile(
+        self.CreateFilePath = CreateFilePath(
               self.wg_select_student
             , self.wg_select_mode
         )
@@ -100,7 +94,7 @@ class KanjiWorkSheet_gui:
         # 生徒選択用のウィジェット作成
         self.wg_select_student.set_class(
               self.KanjiWorkSheet
-            , self.LogFile
+            , self.CreateFilePath
             , self.wg_select_work_sheet_path
             , self.wg_create_worksheet
             , self.wg_problem_region
@@ -119,7 +113,7 @@ class KanjiWorkSheet_gui:
         )
         # プリント作成用ウィジェット
         self.wg_create_worksheet.set_class(
-              self.LogFile
+              self.CreateFilePath
             , self.KanjiWorkSheet
             , self.wg_select_student
             , self.wg_select_work_sheet_path

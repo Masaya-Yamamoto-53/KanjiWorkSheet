@@ -7,6 +7,7 @@
 import os
 import subprocess
 import tkinter as tk
+from tkinter import messagebox
 
 
 class WidgetCreateWorkSheet:
@@ -38,8 +39,8 @@ class WidgetCreateWorkSheet:
         )
         self.Print_Button.pack(side=tk.LEFT, padx=5)
 
-    def set_class(self, logfile, kanji_worksheet, wg_select_student, wg_select_work_sheet_path, wg_scoring):
-        self.LogFile = logfile
+    def set_class(self, create_file_path, kanji_worksheet, wg_select_student, wg_select_work_sheet_path, wg_scoring):
+        self.CreateFilePath = create_file_path
         self.KanjiWorkSheet = kanji_worksheet
         self.WidgetSelectStudent = wg_select_student
         self.WidgetSelectWorkSheetPath = wg_select_work_sheet_path
@@ -72,7 +73,7 @@ class WidgetCreateWorkSheet:
         # 学年を選択しているとき
         else:
             # 採点が残っているとき
-            log_path = self.LogFile.get_path_of_log()
+            log_path = self.CreateFilePath.get_path_of_log()
             yes = True
             if os.path.exists(log_path):
                 msg = tk.messagebox.askquestion('Warning', '採点が終わっていません. このまま続けますか.', default='no')
@@ -92,7 +93,7 @@ class WidgetCreateWorkSheet:
                 result = self.KanjiWorkSheet.create_kanji_worksheet_logfile(log_path)
 
                 # 漢字プリントをPFDで作成する.
-                path = self.get_kanji_worksheet_path()
+                path = self.CreateFilePath.get_path_of_kanji_worksheet()
                 self.KanjiWorkSheet.generate_pdf_kanji_worksheet(path)
 
                 # 採点を更新する.
@@ -113,7 +114,7 @@ class WidgetCreateWorkSheet:
     # イベント発生条件:「印刷」ボタンを押したとき
     # 処理概要:PDFを開く.
     def Event_PrintOut(self):
-        path = self.get_kanji_worksheet_path()
+        path = self.CreateFilePath.get_path_of_kanji_worksheet()
         if os.path.exists(path):
             subprocess.Popen(['start', path], shell=True)
         else:
@@ -135,22 +136,3 @@ class WidgetCreateWorkSheet:
     # 「印刷」ボタンを無効にする.
     def disable_print_button(self):
         self.Print_Button['state'] = tk.DISABLED
-
-    # 漢字プリントのパスを取得する.
-    def get_kanji_worksheet_path(self):
-        name_t = self.WidgetSelectStudent.get_selected_student_name()
-        name = ''
-        for word in list(name_t):
-            if word == u' ' or word == u'　':
-                name += '_'
-            else:
-                name += word
-
-        if self.KanjiWorkSheet.kMDRW == self.KanjiWorkSheet.get_mode():
-            mode_str = '復習モード'
-        elif self.KanjiWorkSheet.kMDTR == self.KanjiWorkSheet.get_mode():
-            mode_str = '練習モード'
-        else:
-            mode_str = '苦手モード'
-
-        return './' + name + '_漢字テスト_' + mode_str + '.pdf'

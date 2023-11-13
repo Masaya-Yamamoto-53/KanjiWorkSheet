@@ -5,9 +5,11 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 
 import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
 
 
-class WidgetSelectStudent():
+class WidgetSelectStudent:
     # 生徒登録用のウィジェット作成
     def __init__(self, debug, user_settings, root, row, column):
         self.Debug = debug  # デバッグ表示クラス
@@ -48,7 +50,7 @@ class WidgetSelectStudent():
     def set_class(
               self
             , kanji_worksheet
-            , logfile
+            , create_file_path
             , wg_select_work_sheet_path
             , wg_create_worksheet
             , wg_problem_region
@@ -58,7 +60,7 @@ class WidgetSelectStudent():
             , wg_report
     ):
         self.KanjiWorkSheet = kanji_worksheet
-        self.LogFile = logfile
+        self.CreateFilePath = create_file_path
         self.WidgetSelectWorkSheetPath = wg_select_work_sheet_path
         self.WidgetCreateWorkSheet = wg_create_worksheet
         self.WidgetProblemRegion = wg_problem_region
@@ -161,7 +163,7 @@ class WidgetSelectStudent():
             msg = tk.messagebox.askquestion('Warning', '本当に削除しますか.', default='no')
             if msg == 'yes':
                 # 漢字プリントのログを削除する.
-                self.KanjiWorkSheet.delete_kanji_worksheet_logfile(self.LogFile.get_path_of_log())
+                self.KanjiWorkSheet.delete_kanji_worksheet_logfile(self.CreateFilePath.get_path_of_log())
 
                 # 設定ファイルの該当データを削除する.
                 self.UserSettings.delete_student(name)
