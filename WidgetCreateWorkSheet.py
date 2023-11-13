@@ -92,8 +92,8 @@ class WidgetCreateWorkSheet:
                 result = self.KanjiWorkSheet.create_kanji_worksheet_logfile(log_path)
 
                 # 漢字プリントをPFDで作成する.
-                self.path_of_worksheet = self.get_kanji_worksheet_path()
-                self.KanjiWorkSheet.generate_pdf_kanji_worksheet(self.path_of_worksheet)
+                path = self.get_kanji_worksheet_path()
+                self.KanjiWorkSheet.generate_pdf_kanji_worksheet(path)
 
                 # 採点を更新する.
                 self.WidgetScoring.update_scoring()
@@ -105,7 +105,7 @@ class WidgetCreateWorkSheet:
                     self.WidgetScoring.disable_scoring_button()
 
                 # 終了メッセージを表示する.
-                tk.messagebox.showinfo('Info', os.path.basename(self.path_of_worksheet) + ' を作成しました.')
+                tk.messagebox.showinfo('Info', os.path.basename(path) + ' を作成しました.')
             else:
                 # 中止メッセージを表示する.
                 tk.messagebox.showinfo('Info', '中止しました.')
@@ -113,9 +113,9 @@ class WidgetCreateWorkSheet:
     # イベント発生条件:「印刷」ボタンを押したとき
     # 処理概要:PDFを開く.
     def Event_PrintOut(self):
-        self.path_of_worksheet = self.get_kanji_worksheet_path()
-        if os.path.exists(self.path_of_worksheet):
-            subprocess.Popen(['start', self.path_of_worksheet], shell=True)
+        path = self.get_kanji_worksheet_path()
+        if os.path.exists(path):
+            subprocess.Popen(['start', path], shell=True)
         else:
             # 対象ファイルが存在しない/
             tk.messagebox.showinfo('Info', '漢字プリントを作成してください.')

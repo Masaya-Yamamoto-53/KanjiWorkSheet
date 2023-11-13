@@ -90,7 +90,7 @@ class KanjiWorkSheet_gui:
             self.Debug, self.UserSettings, self.ScoringFrame, row=0, column=0)
         # レポート用ウィジェット作成
         self.wg_report = WidgetReport(
-            self.Debug, self.UserSettings, self.UserSettings, self.PrintReportFrame, row=0, column=0)
+            self.Debug, self.UserSettings, self.PrintReportFrame, row=0, column=0)
         # ログファイル
         self.LogFile = LogFile(
               self.wg_select_student
@@ -142,10 +142,12 @@ class KanjiWorkSheet_gui:
         )
         # 採点用のウィジェット作成
         self.wg_scoring.set_class(
-              self.wg_select_student
+              self.KanjiWorkSheet
+            , self.wg_select_student
             , self.wg_report
         )
         # レポート用ウィジェット作成
         self.wg_report.set_class(
-              self.wg_select_work_sheet_path
+              self.KanjiWorkSheet
+            , self.wg_select_work_sheet_path
         )

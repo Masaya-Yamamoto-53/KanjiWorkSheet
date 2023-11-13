@@ -8,12 +8,9 @@ import pandas as pd
 class UserSettings:
     def __init__(self):
         self.kStudentName = 'Name'
-
         self.kProblemPath = 'Path'
-
         self.kNumber = 'Number'
         self.kMaxNumber = 20
-
         self.kJS1 = '小学一年生'
         self.kJS2 = '小学二年生'
         self.kJS3 = '小学三年生'
@@ -28,7 +25,6 @@ class UserSettings:
             , self.kJS5
             , self.kJS6
         ]
-
         self.kMode = '出題形式'
         self.kModeReview = 0  # 復習モード
         self.kModeTrain = 1  # 練習モード
@@ -56,7 +52,6 @@ class UserSettings:
             , self.kJS6
             , self.kMode
         ]
-
         # エンコーディング
         self.encoding = 'shift-jis'
 
@@ -113,7 +108,6 @@ class UserSettings:
         # 設定ファイルにデータを結合し, インデックスを更新する.
         self.setting_data = pd.concat([self.setting_data, pd_data], axis=0)
         self.setting_data = self.setting_data.reset_index(drop=True)
-
         # 設定ファイルに保存する.
         self.save_setting_file()
 

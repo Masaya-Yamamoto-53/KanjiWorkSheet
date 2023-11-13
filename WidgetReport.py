@@ -49,9 +49,6 @@ class WidgetReport:
         self.Report_MonthFrame = tk.Frame(self.ReportFrame)
         self.Report_MonthFrame.grid(row=0, column=5)
 
-        # 出題内容
-        #self.create_widget_report_OutInfo(self.OutInfoFrame)
-
         # レポート
         self.create_widget_report_Problem(self.Report_ProblemFrame, self.kGradeReportList, u'出題状況')
         self.create_widget_report_Correct(self.Report_CorrectFrame, self.kGradeReportList, u'　正解')
