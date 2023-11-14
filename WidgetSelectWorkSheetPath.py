@@ -10,8 +10,8 @@ import tkinter.filedialog as filedialog
 
 
 class WidgetSelectWorkSheetPath:
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         # 問題集選択ラベルフレーム
@@ -47,7 +47,7 @@ class WidgetSelectWorkSheetPath:
     # イベント発生条件:「選択」ボタンを押したとき
     # 処理概要:選択したCSVファイルを設定する.
     def Event_SelectKanjiWorkSheet(self):
-        self.Debug.print_info('Call: Event_SelectKanjiWorkSheet')
+        self.DebugPrint.print_info('Call: Event_SelectKanjiWorkSheet')
         path = filedialog.askopenfilename(
               filetypes=[('', '*.csv')]
             , initialdir=os.path.abspath(os.path.dirname(__file__))

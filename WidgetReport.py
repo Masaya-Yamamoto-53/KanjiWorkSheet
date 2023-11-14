@@ -9,8 +9,8 @@ import tkinter as tk
 
 class WidgetReport:
     # レポート用のウィジェット作成
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         self.kTotal = '　　　合計'
@@ -237,9 +237,11 @@ class WidgetReport:
 
     def update_report(self, diff=0):
         """レポートを更新する."""
-        grade_list = [[1], [2], [3], [4], [5], [6], [7], [8], [9], [1, 2, 3, 4, 5, 6, 7, 8, 9]]
-        self.Debug.print_info('レポートを更新する.')
+        self.DebugPrint.print_info('レポートを更新する.')
 
+        grade_list = [[1], [2], [3], [4], [5], [6], [1, 2, 3, 4, 5, 6]]
+
+        # 問題集をロードする.
         path = self.WidgetSelectWorkSheetPath.get_selected_worksheet_path()
         (err_num, _, _, _) = self.KanjiWorkSheet.load_worksheet(path)
 

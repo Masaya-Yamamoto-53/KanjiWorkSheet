@@ -15,6 +15,7 @@ class CreateFilePath:
     def get_path_of_kanji_worksheet(self):
         name_t = self.WidgetSelectStudent.get_selected_student_name()
         name = ''
+        # 苗字と名前の間にスペースがある場合はアンダーバーに変換する.
         for word in list(name_t):
             if word == u' ' or word == u'　':
                 name += '_'

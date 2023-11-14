@@ -7,10 +7,10 @@
 import tkinter as tk
 
 
-class WidgetRegisterStudent():
+class WidgetRegisterStudent:
     # 生徒登録用のウィジェット作成
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         # 生徒登録ラベルフレーム
@@ -32,7 +32,7 @@ class WidgetRegisterStudent():
     # イベント発生条件:「登録」ボタンを押したとき
     # 処理概要:「生徒登録」エントリーに記入した名前を設定ファイルに登録する.
     def Event_RegisterStudent(self):
-        self.Debug.print_info('Call: Event_RegisterStudent')
+        self.DebugPrint.print_info('Call: Event_RegisterStudent')
 
         # 「生徒登録」エントリーが空欄であった場合は,
         # メッセージボックスで名前の入力が必要であることを通知する.
@@ -48,7 +48,7 @@ class WidgetRegisterStudent():
                 tk.messagebox.showerror('Error', '既に登録済みです.')
             # 生徒を設定ファイルに登録する.
             else:
-                self.Debug.print_info('生徒(' + name + ')の新規登録を行いました.')
+                self.DebugPrint.print_info('生徒(' + name + ')の新規登録を行いました.')
                 # 生徒を設定ファイルに登録する.
                 self.UserSettings.register_student(name)
                 # 生徒を設定ファイルに登録した後に, 登録できたことを伝えるために「生徒登録」エントリーを空欄にする.

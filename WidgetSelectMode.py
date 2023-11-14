@@ -8,8 +8,8 @@ import tkinter as tk
 
 
 class WidgetSelectMode:
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         self.kMDRW = '復習'
@@ -53,7 +53,7 @@ class WidgetSelectMode:
         self.WidgetScoring = wg_scoring
 
     def Event_RadioButton(self):
-        self.Debug.print_info('Call: Event_RadioButton')
+        self.DebugPrint.print_info('Call: Event_RadioButton')
 
         # 登録者を取得する.
         name = self.WidgetSelectStudent.get_selected_student_name()

@@ -6,49 +6,53 @@
 import os
 import pandas as pd
 
+from DebugPrint import DebugPrint
+
 class KanjiWorkSheet:
     def __init__(self, debug=False):
         # デバッグ情報を表示する場合はTrue
-        self.kDebug = debug
+        self.DebugPrint = DebugPrint(debug=debug)
+
+        self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
 
         # 問題集/ログの列
+        self.kGrade       = '学年'
+        self.kProblem     = '問題文'
+        self.kAnswer      = '答え'
+        self.kNumber      = '番号'
+        self.kAdminNumber = '管理番号'
+        self.kLastUpdate  = '最終更新日'
+        self.kResult      = '結果'
+        self.kHistory     = '履歴'
+
+        # 問題集/ログの辞書のキー
         self.kFileColumns = [
-                  '学年'
-                , '問題文'
-                , '答え'
-                , '番号'
-                , '管理番号'
-                , '最終更新日'
-                , '結果'
-                , '履歴'
+              self.kGrade
+            , self.kProblem
+            , self.kAnswer
+            , self.kNumber
+            , self.kAdminNumber
+            , self.kLastUpdate
+            , self.kResult
+            , self.kHistory
         ]
 
-        self.kGrade = self.kFileColumns[0]
-        self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
-        self.kProblem = self.kFileColumns[1]
-        self.kAnswer = self.kFileColumns[2]
-        self.kNumber = self.kFileColumns[3]
-        self.kAdminNumber = self.kFileColumns[4]
-        self.kLastUpdate = self.kFileColumns[5]
-        self.kResult = self.kFileColumns[6]
-        self.kHistory = self.kFileColumns[7]
-
         # 漢字テストの結果
-        self.kNotMk = '-'
-        self.kCrctMk = 'o'
+        self.kNotMk    = '-'
+        self.kCrctMk   = 'o'
         self.kIncrctMk = 'x'
-        self.kDayMk = 'd'
-        self.kWeekMk = 'w'
-        self.kMonthMk = 'm'
+        self.kDayMk    = 'd'
+        self.kWeekMk   = 'w'
+        self.kMonthMk  = 'm'
 
-        # レポートの辞書キー
+        # 漢字テストの辞書のキー
         self.report_key_list = [
-                  self.kNotMk     # 未出題
-                , self.kCrctMk    # 正解
-                , self.kIncrctMk  # 不正解
-                , self.kDayMk     # 一日後
-                , self.kWeekMk    # 一週間後
-                , self.kMonthMk   # 一ヶ月後
+              self.kNotMk     # 未出題
+            , self.kCrctMk    # 正解
+            , self.kIncrctMk  # 不正解
+            , self.kDayMk     # 一日後
+            , self.kWeekMk    # 一週間後
+            , self.kMonthMk   # 一ヶ月後
         ]
 
         # 問題集
@@ -237,27 +241,11 @@ class KanjiWorkSheet:
 
     # デバッグ情報を標準出力する.
     def print_info(self, msg):
-        """
-        :param msg: 出力メッセージ
-        :type msg: string
-
-        デバッグ情報を標準出力する.
-        """
-        if self.kDebug:
-            print('Info: ' + msg)
-        return msg
+        return self.DebugPrint.print_info(msg)
 
     # エラーメッセージを標準出力する.
     def print_error(self, msg):
-        """
-        :param msg: 出力メッセージ
-        :type msg: string
-
-        エラーメッセージを標準出力する.
-        """
-        if self.kDebug:
-            print('\033[31m' + 'Error: ' + msg + '\033[0m')
-        return msg
+        return self.DebugPrint.print_error(msg)
 
     # ファイル形式をチェックする.
     def __check_file_format(self, fmt_err_msg=None):

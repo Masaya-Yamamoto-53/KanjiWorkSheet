@@ -11,8 +11,8 @@ from tkinter import messagebox
 
 
 class WidgetCreateWorkSheet:
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         # 作成フレーム
@@ -49,7 +49,7 @@ class WidgetCreateWorkSheet:
     # イベント発生条件:「プリント作成」ボタンを押したとき
     # 処理概要:漢字プリントを作成する.
     def Event_CreateKanjiWorkSheet(self):
-        self.Debug.print_info('Call: Event_CreateKanjiWorkSheet')
+        self.DebugPrint.print_info('Call: Event_CreateKanjiWorkSheet')
 
         # 生徒名を設定する.
         name = self.WidgetSelectStudent.get_selected_student_name()

@@ -12,8 +12,8 @@ import tkinter as tk
 
 class WidgetScoring:
     # 生徒登録用のウィジェット作成
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         # 採点ラベルフレーム
@@ -101,7 +101,7 @@ class WidgetScoring:
     # イベント発生条件:「採点完了」ボタンを押したとき
     # 処理概要:採点結果を問題集に反映する.
     def Event_PushBtnScoreing(self):
-        self.Debug.print_info('Call: Event_PushBtnScoreing')
+        self.DebugPrint.print_info('Call: Event_PushBtnScoreing')
         keys = [
               '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'
             , '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
@@ -174,7 +174,7 @@ class WidgetScoring:
 
     def update_scoring(self):
         """採点を更新する."""
-        self.Debug.print_info('Call: update_scoring')
+        self.DebugPrint.print_info('Call: update_scoring')
         keys = [
              '①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'
             ,'⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'

@@ -7,7 +7,7 @@
 import tkinter as tk
 
 from KanjiWorkSheet_prob import KanjiWorkSheet_prob
-from Debug import Debug
+from DebugPrint import DebugPrint
 from UserSettings import UserSettings
 
 from WidgetRegisterStudent import WidgetRegisterStudent
@@ -26,7 +26,7 @@ from CreateFilePath import CreateFilePath
 class KanjiWorkSheet_gui:
     def __init__(self):
         self.KanjiWorkSheet = KanjiWorkSheet_prob()
-        self.Debug = Debug(True)
+        self.DebugPrint = DebugPrint(True)
         self.UserSettings = UserSettings()
         self.Root = tk.Tk()
         self.Root.title(u'漢字プリント作成ツール')
@@ -60,31 +60,31 @@ class KanjiWorkSheet_gui:
 
         # 生徒登録用のウィジェット作成
         self.wg_register_student = WidgetRegisterStudent(
-            self.Debug, self.UserSettings, self.SelectFrame, row=0, column=0)
+            self.DebugPrint, self.UserSettings, self.SelectFrame, row=0, column=0)
         # 生徒選択用のウィジェット作成
         self.wg_select_student = WidgetSelectStudent(
-            self.Debug, self.UserSettings, self.SelectFrame, row=1, column=0)
+            self.DebugPrint, self.UserSettings, self.SelectFrame, row=1, column=0)
         # 問題集選択用のウィジェット作成
         self.wg_select_work_sheet_path = WidgetSelectWorkSheetPath(
-            self.Debug, self.UserSettings, self.SelectFrame, row=2, column=0)
+            self.DebugPrint, self.UserSettings, self.SelectFrame, row=2, column=0)
         # プリント作成用ウィジェット
         self.wg_create_worksheet = WidgetCreateWorkSheet(
-            self.Debug, self.UserSettings, self.SelectFrame, row = 4, column = 0)
+            self.DebugPrint, self.UserSettings, self.SelectFrame, row = 4, column = 0)
         # 出題範囲選択用のウィジェット作成
         self.wg_problem_region = WidgetProblemRegion(
-            self.Debug, self.UserSettings, self.SelectFrame_Range_Num, row=0, column=0)
+            self.DebugPrint, self.UserSettings, self.SelectFrame_Range_Num, row=0, column=0)
         # 出題数用のウィジェット作成
         self.wg_select_number_of_problem = WidgetSelectNumberOfProblem(
-            self.Debug, self.UserSettings, self.SelectFrame_Range_Num, row=0, column=1)
+            self.DebugPrint, self.UserSettings, self.SelectFrame_Range_Num, row=0, column=1)
         # 出題選択モードのウィジェット作成
         self.wg_select_mode = WidgetSelectMode(
-            self.Debug, self.UserSettings, self.SelectFrame_Range_Num, row=1, column=0)
+            self.DebugPrint, self.UserSettings, self.SelectFrame_Range_Num, row=1, column=0)
         # 採点用のウィジェット作成
         self.wg_scoring = WidgetScoring(
-            self.Debug, self.UserSettings, self.ScoringFrame, row=0, column=0)
+            self.DebugPrint, self.UserSettings, self.ScoringFrame, row=0, column=0)
         # レポート用ウィジェット作成
         self.wg_report = WidgetReport(
-            self.Debug, self.UserSettings, self.PrintReportFrame, row=0, column=0)
+            self.DebugPrint, self.UserSettings, self.PrintReportFrame, row=0, column=0)
         # ログファイル
         self.CreateFilePath = CreateFilePath(
               self.wg_select_student

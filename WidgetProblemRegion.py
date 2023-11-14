@@ -4,12 +4,12 @@
 # see https://opensource.org/licenses/MIT (英語)
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 
-import os
 import tkinter as tk
 
+
 class WidgetProblemRegion:
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         # 出題範囲選択ラベルフレーム
@@ -55,7 +55,7 @@ class WidgetProblemRegion:
     # イベント発生条件:「出題範囲選択」チェックボックスを選択したとき
     # 処理概要:チェックボックスの値が変化したとき, 設定を反映する.
     def Event_CheckButton(self):
-        self.Debug.print_info('Call: Event_CheckButton')
+        self.DebugPrint.print_info('Call: Event_CheckButton')
         # 登録者の要素数を取得する.
         name = self.WidgetSelectStudent.get_selected_student_name()
 

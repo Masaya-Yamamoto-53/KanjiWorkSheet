@@ -11,8 +11,8 @@ from tkinter import messagebox
 
 class WidgetSelectStudent:
     # 生徒登録用のウィジェット作成
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         # 生徒選択ラベルフレーム
@@ -72,7 +72,7 @@ class WidgetSelectStudent:
     # イベント発生条件:「生徒選択」コンボボックスを押したとき
     # 処理概要:「生徒選択」コンボボックスのメニューを更新する.
     def Event_UpdateStudent(self):
-        self.Debug.print_info('Call: Event_UpdateStudent')
+        self.DebugPrint.print_info('Call: Event_UpdateStudent')
         # 生徒の登録がある場合は, 設定ファイルから生徒の名前を取得して,
         # 「生徒選択」コンボボックスのメニューに設定する.
         if self.UserSettings.get_setting_num() != 0:
@@ -84,7 +84,7 @@ class WidgetSelectStudent:
     # イベント発生条件:「生徒選択」コンボボックスを押し, 生徒を選択したとき
     # 処理概要:選択した生徒の設定に更新する.
     def Event_SelectStudent(self, event):
-        self.Debug.print_info('Call: Event_SelectStudent')
+        self.DebugPrint.print_info('Call: Event_SelectStudent')
         # 「生徒選択」コンボボックスで選択した生徒の名前を取得する.
         name = self.get_selected_student_name()
         # 名前が有効なとき
@@ -154,7 +154,7 @@ class WidgetSelectStudent:
     # イベント発生条件:「削除」ボタンを押したとき
     # 処理概要:「生徒選択」コンボボックスに記入している生徒を削除する.
     def Event_DeleteStudent(self):
-        self.Debug.print_info('Call: Event_DeleteStudent')
+        self.DebugPrint.print_info('Call: Event_DeleteStudent')
         # 現在選択している登録者を削除する.
         # コンボボックスから登録者名を取得する.
         name = self.get_selected_student_name()

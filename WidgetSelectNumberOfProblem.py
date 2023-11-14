@@ -8,8 +8,8 @@ import tkinter as tk
 
 
 class WidgetSelectNumberOfProblem:
-    def __init__(self, debug, user_settings, root, row, column):
-        self.Debug = debug  # デバッグ表示クラス
+    def __init__(self, debug_print, user_settings, root, row, column):
+        self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
         # 出題数ラベルフレーム
@@ -35,7 +35,7 @@ class WidgetSelectNumberOfProblem:
     # イベント発生条件:「出題数」エントリーを変更したとき
     # 処理概要:出題数を更新する.
     def Event_ChangeNumberOfProblem(self, var, indx, mode):
-        self.Debug.print_info('Call: Event_ChangeNumberOfProblem')
+        self.DebugPrint.print_info('Call: Event_ChangeNumberOfProblem')
         num = self.get_number_of_problem()
 
         # 選択している生徒が設定ファイルに存在しているとき, 設定ファイルに出題数を保存する.
