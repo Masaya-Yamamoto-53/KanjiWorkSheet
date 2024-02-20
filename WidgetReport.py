@@ -65,7 +65,7 @@ class WidgetReport:
         self.create_widget_report_Problem(self.Report_ProblemFrame, self.kGradeReportList, u'出題状況')
         self.create_widget_report_Correct(self.Report_CorrectFrame, self.kGradeReportList, u'　正解')
         self.create_widget_report_InCorrect(self.Report_InCorrectFrame, self.kGradeReportList, u'不正解')
-        self.create_widget_report_Day(self.Report_DayFrame, self.kGradeReportList, u'1日後')
+        self.create_widget_report_Day(self.Report_DayFrame, self.kGradeReportList, u'3日後')
         self.create_widget_report_Week(self.Report_WeekFrame, self.kGradeReportList, u'1週間後')
         self.create_widget_report_Month(self.Report_MonthFrame, self.kGradeReportList, u'1ヶ月後')
 
@@ -409,23 +409,23 @@ class WidgetReport:
         else:
             return 0
 
-    # 「１日後」エントリーを有効にする.
+    # 「３日後」エントリーを有効にする.
     def enable_report_daynum_entry(self, key):
         self.Report_Day_Entry_Num[key].configure(state='normal')
 
-    # 「１日後」エントリーを無効にする.
+    # 「３日後」エントリーを無効にする.
     def disable_report_daynum_entry(self, key):
         self.Report_Day_Entry_Num[key].configure(state='readonly')
 
-    # 「１日後」エントリーのデータを削除する.
+    # 「３日後」エントリーのデータを削除する.
     def delete_report_daynum_entry(self, key):
         self.Report_Day_Entry_Num[key].delete('0', 'end')
 
-    # 「１日後」エントリーのデータを挿入する.
+    # 「３日後」エントリーのデータを挿入する.
     def insert_report_daynum_entry(self, key, value):
         self.Report_Day_Entry_Num[key].insert('end', value)
 
-    # 「１日後」エントリーのデータを取得する.
+    # 「３日後」エントリーのデータを取得する.
     def get_report_daynum_entry(self, key):
         data = self.Report_Day_Entry_Num[key].get().split('(')[0]
         if data.isdigit():

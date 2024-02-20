@@ -13,6 +13,7 @@ import tkinter as tk
 class WidgetScoring:
     # 生徒登録用のウィジェット作成
     def __init__(self, debug_print, user_settings, root, row, column):
+        self.WidgetSelectMode = None
         self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
@@ -94,9 +95,10 @@ class WidgetScoring:
             self.ScoringFrame_AnsFrame_Value[key] = None
             i += 1
 
-    def set_class(self, kanji_worksheet, wg_select_student, wg_report):
+    def set_class(self, kanji_worksheet, wg_select_student, wg_select_mode, wg_report):
         self.KanjiWorkSheet = kanji_worksheet
         self.WidgetSelectStudent = wg_select_student
+        self.WidgetSelectMode = wg_select_mode
         self.WidgetReport = wg_report
 
     # イベント発生条件:「採点完了」ボタンを押したとき
@@ -177,8 +179,7 @@ class WidgetScoring:
         """採点を更新する."""
         self.DebugPrint.print_info('Call: update_scoring')
         keys = [
-             '①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'
-            ,'⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'
+            '①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'
         ]
         # 採点の内容を削除
         for key in keys:
@@ -279,4 +280,4 @@ class WidgetScoring:
         if not os.path.isdir(logdir):
             os.mkdir(logdir)
 
-        return logdir + '.' + name + str(self.KanjiWorkSheet.get_mode()) + '.log'
+        return logdir + '.' + name + str(self.WidgetSelectMode.get_selected_student_mode()) + '.log'

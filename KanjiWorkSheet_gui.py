@@ -87,61 +87,62 @@ class KanjiWorkSheet_gui:
             self.DebugPrint, self.UserSettings, self.PrintReportFrame, row=0, column=0)
         # ログファイル
         self.CreateFilePath = CreateFilePath(
-              self.wg_select_student
-            , self.wg_select_mode
+            self.wg_select_student,
+            self.wg_select_mode
         )
 
         # 生徒選択用のウィジェット作成
         self.wg_select_student.set_class(
-              self.KanjiWorkSheet
-            , self.CreateFilePath
-            , self.wg_select_work_sheet_path
-            , self.wg_create_worksheet
-            , self.wg_problem_region
-            , self.wg_select_number_of_problem
-            , self.wg_select_mode
-            , self.wg_scoring
-            , self.wg_report
+            self.KanjiWorkSheet,
+            self.CreateFilePath,
+            self.wg_select_work_sheet_path,
+            self.wg_create_worksheet,
+            self.wg_problem_region,
+            self.wg_select_number_of_problem,
+            self.wg_select_mode,
+            self.wg_scoring,
+            self.wg_report
         )
         # 問題集選択用のウィジェット作成
         self.wg_select_work_sheet_path.set_class(
-              self.KanjiWorkSheet
-            , self.wg_select_student
-            , self.wg_scoring
-            , self.wg_report
-            , self.wg_create_worksheet
+            self.KanjiWorkSheet,
+            self.wg_select_student,
+            self.wg_scoring,
+            self.wg_report,
+            self.wg_create_worksheet
         )
         # プリント作成用ウィジェット
         self.wg_create_worksheet.set_class(
-              self.CreateFilePath
-            , self.KanjiWorkSheet
-            , self.wg_select_student
-            , self.wg_select_work_sheet_path
-            , self.wg_scoring
+            self.CreateFilePath,
+            self.KanjiWorkSheet,
+            self.wg_select_student,
+            self.wg_select_work_sheet_path,
+            self.wg_scoring
         )
         # 出題範囲選択用のウィジェット作成
         self.wg_problem_region.set_class(
-              self.wg_select_student
+            self.wg_select_student
         )
         # 出題数用のウィジェット作成
         self.wg_select_number_of_problem.set_class(
-              self.KanjiWorkSheet
-            , self.wg_select_student
+            self.KanjiWorkSheet,
+            self.wg_select_student
 
         )
         # 出題選択モードのウィジェット作成
         self.wg_select_mode.set_class(
-              self.wg_select_student
-            , self.wg_scoring
+            self.wg_select_student,
+            self.wg_scoring
         )
         # 採点用のウィジェット作成
         self.wg_scoring.set_class(
-              self.KanjiWorkSheet
-            , self.wg_select_student
-            , self.wg_report
+            self.KanjiWorkSheet,
+            self.wg_select_student,
+            self.wg_select_mode,
+            self.wg_report
         )
         # レポート用ウィジェット作成
         self.wg_report.set_class(
-              self.KanjiWorkSheet
-            , self.wg_select_work_sheet_path
+            self.KanjiWorkSheet,
+            self.wg_select_work_sheet_path
         )

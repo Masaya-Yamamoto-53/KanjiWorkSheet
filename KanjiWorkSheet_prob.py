@@ -552,20 +552,13 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         """復習モードの漢字プリントを作成する."""
         self.print_info("Review Mode")
 
-        # ○になっている問題を出題する.
-        # 最終更新日の古い順に並び替えて、その先頭から順に問題を選択する。
-        # ただし、答えに重複がある問題については選択しないようにする。
-        (list_o, num) = self.remove_duplicates_kanji_problem(self.get_number_of_problem(), self.kCrctMk, sort=True)
+        # 間違えた問題のインデックスを取得する.
+        self.list_x_idx = self.get_kanji_worksheet_index(self.kIncrctMk, days=0)
+        np.random.shuffle(self.list_x_idx)
 
-        # 一ヶ月経過しても出題していない漢字の問題のインデックスを取得する.
-        #self.get_kanji_worksheet_old_index()
-
-        if len(list_o) > 0:
-            self.kanji_worksheet_idx = list_o  # 漢字プリントに出題する問題集のインデックスのリストを更新する.
-            self.set_number_of_problem(num)    # 出題数を更新する.
-        else:
-            # 問題を選出できなかったとき、練習モードと同じにする.
-            self.create_train_mode_kanji_worksheet()
+        # インデックスをマージする.
+        self.kanji_worksheet_idx = self.list_x_idx
+        self.set_number_of_problem(len(self.list_x_idx))
 
     # 出題してからしばらく再出題していない漢字の問題のインデックスを取得する.
     def get_kanji_worksheet_old_index(self):
@@ -611,25 +604,18 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         self.print_info("Train Mode")
 
         # テスト問題を選定する.
-        # 間違えた問題のインデックスを取得する.
-        self.list_x_idx = self.get_kanji_worksheet_index(self.kIncrctMk, days=0)
         # 出題してからしばらく再出題していない漢字の問題のインデックスを取得する.
         self.list_a_idx = self.get_kanji_worksheet_old_index()
-        # 昨日間違えた問題のインデックスを取得する.
-        self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk, days=1)
+        # 三日前に間違えた問題のインデックスを取得する.
+        self.list_d_idx = self.get_kanji_worksheet_index(self.kDayMk, days=3)
         # 一週間前に間違えた問題のインデックスを取得する.
         self.list_w_idx = self.get_kanji_worksheet_index(self.kWeekMk, days=7 - 1)
         # 一ヶ月前に間違えた問題のインデックスを取得する.
         self.list_m_idx = self.get_kanji_worksheet_index(self.kMonthMk, days=7 * 4 - 7)
 
         # 4つの問題を連結する.
-        # 優先順位: 30日以上出題していない問題 ＞ 不正解 ＞ 次の日に出題 ＞ 一週間後に出題 ＞ 一ヶ月後に出題 ＞ 未出題 ＞ 正解
-        self.kanji_worksheet_idx = np.concatenate([
-                self.list_x_idx,
-                self.list_a_idx,
-                self.list_d_idx,
-                self.list_w_idx,
-                self.list_m_idx])
+        # 優先順位: 30日以上出題していない問題 ＞ 三日後に出題 ＞ 一週間後に出題 ＞ 一ヶ月後に出題 ＞ 未出題 ＞ 正解
+        self.kanji_worksheet_idx = np.concatenate([self.list_a_idx, self.list_d_idx, self.list_w_idx, self.list_m_idx])
 
         num = self.get_number_of_problem() - len(self.kanji_worksheet_idx)
         if num <= 0:

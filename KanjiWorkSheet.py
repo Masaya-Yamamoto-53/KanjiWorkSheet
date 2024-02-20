@@ -21,25 +21,25 @@ class KanjiWorkSheet:
         self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
 
         # 問題集/ログの列
-        self.kGrade       = '学年'
-        self.kProblem     = '問題文'
-        self.kAnswer      = '答え'
-        self.kNumber      = '番号'
+        self.kGrade = '学年'
+        self.kProblem = '問題文'
+        self.kAnswer = '答え'
+        self.kNumber = '番号'
         self.kAdminNumber = '管理番号'
-        self.kLastUpdate  = '最終更新日'
-        self.kResult      = '結果'
-        self.kHistory     = '履歴'
+        self.kLastUpdate = '最終更新日'
+        self.kResult = '結果'
+        self.kHistory = '履歴'
 
         # 問題集/ログの辞書のキー
         self.kFileColumns = [
-              self.kGrade
-            , self.kProblem
-            , self.kAnswer
-            , self.kNumber
-            , self.kAdminNumber
-            , self.kLastUpdate
-            , self.kResult
-            , self.kHistory
+            self.kGrade,
+            self.kProblem,
+            self.kAnswer,
+            self.kNumber,
+            self.kAdminNumber,
+            self.kLastUpdate,
+            self.kResult,
+            self.kHistory
         ]
 
         # 漢字テストの結果
@@ -115,13 +115,13 @@ class KanjiWorkSheet:
         for grade in range(self.kGradeRange[0], self.kGradeRange[-1]+1):
             # 指定した学年の問題を取得する.
             problem = self.get_problem_with_grade([grade])
-            sum = 0
+            p_value = 0
             # 履歴から合計出題数を算出する.
             for hist in problem[self.kHistory].values:
-                sum += len(hist)
+                p_value += len(hist)
 
             # 学年毎に合計出題数を出力する.
-            self.print_info(str(grade) + '年生: ' + str(sum) + '問')
+            self.print_info(str(grade) + '年生: ' + str(p_value) + '問')
 
         # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
         return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \

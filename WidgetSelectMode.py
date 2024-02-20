@@ -9,8 +9,8 @@ import tkinter as tk
 
 class WidgetSelectMode:
     def __init__(self, debug_print, user_settings, root, row, column):
-        self.widgetselectstudent = None
-        self.widgetscoring = None
+        self.WidgetSelectStudent = None
+        self.WidgetScoring = None
         self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
@@ -48,8 +48,8 @@ class WidgetSelectMode:
             self.SelectModeFrame_Radiobutton[key].pack(side='left')
 
     def set_class(self, wg_select_student, wg_scoring):
-        self.widgetselectstudent = wg_select_student
-        self.widgetscoring = wg_scoring
+        self.WidgetSelectStudent = wg_select_student
+        self.WidgetScoring = wg_scoring
 
     def Event_RadioButton(self):
         self.DebugPrint.print_info('Call: Event_RadioButton')
