@@ -11,6 +11,7 @@ import numpy as np
 from KanjiWorkSheet import KanjiWorkSheet
 from KanjiWorkSheet_draw import KanjiWorkSheet_draw
 
+
 class KanjiWorkSheet_prob(KanjiWorkSheet):
     def __init__(self):
         super(KanjiWorkSheet_prob, self).__init__(debug=True)
@@ -34,7 +35,6 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
 
         self.kMDRW = 0  # 復習モード
         self.kMDTR = 1  # 練習モード
-        self.kMDWK = 2  # 苦手モード
         self.mode = self.kMDTR  # 出題モード
         self.number_of_problem = 20  # 出題数(デフォルト:20)
 
@@ -88,7 +88,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         for grade in self.grade:
             result_dict = self.get_analysis_correct_kanji_by_grade_dict(grade)
             for key, value in result_dict.items():
-                if value == False:
+                if not value:
                     result.append(key)
 
     # 漢字プリントの出題範囲を取得する.
@@ -225,9 +225,9 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         flg = False
         self.print_info('問題文中に答えが存在するため、ひらがなに置き換えました.')
         problem_statement_list = ['' for _ in range(self.get_number_of_problem())]
-        for statement, idx, i in zip(self.worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
-                                   , self.kanji_worksheet_idx
-                                   , range(self.get_number_of_problem())):
+        for statement, idx, i in zip(self.worksheet.loc[self.kanji_worksheet_idx, self.kProblem],
+                                     self.kanji_worksheet_idx,
+                                     range(self.get_number_of_problem())):
             for word in statement:
                 if self.is_kanji(word):
                     # 問題文の漢字が答えで使っている場合
@@ -260,9 +260,9 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         ruby_flg = False
         self.print_info('問題文中に不要なルビがあるため、削除しました.')
         problem_statement_list = ['' for _ in range(self.get_number_of_problem())]
-        for statement, idx, i in zip(self.worksheet.loc[self.kanji_worksheet_idx, self.kProblem]
-                , self.kanji_worksheet_idx
-                , range(self.get_number_of_problem())):
+        for statement, idx, i in zip(self.worksheet.loc[self.kanji_worksheet_idx, self.kProblem],
+                self.kanji_worksheet_idx,
+                range(self.get_number_of_problem())):
             for word in statement:
                 if self.is_kanji(word):
                     # 選択した学年の最高位は除く。
@@ -528,8 +528,6 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # モードの設定にあった問題を選択する.
         if   self.mode == self.kMDRW:  # 復習モード
             self.create_review_mode_kanji_worksheet()
-        elif self.mode == self.kMDWK:  # 苦手モード
-            self.create_weakness_mode_kanji_worksheet()
         else:                          # 練習モード
             self.create_train_mode_kanji_worksheet()
 
@@ -574,8 +572,8 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 最後の出題から30日以上経過した漢字の辞書を作成.
         #tmp2_df = pd.DataFrame()
         self.old_kanji_dict = self.create_long_time_no_question_dict(
-                  self.worksheet[self.kAnswer].tolist()
-                , self.worksheet[self.kLastUpdate].tolist()
+                self.worksheet[self.kAnswer].tolist(),
+                self.worksheet[self.kLastUpdate].tolist()
         )
         #print("==================================================================")
         #print(self.old_kanji_dict)
@@ -627,11 +625,11 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 4つの問題を連結する.
         # 優先順位: 30日以上出題していない問題 ＞ 不正解 ＞ 次の日に出題 ＞ 一週間後に出題 ＞ 一ヶ月後に出題 ＞ 未出題 ＞ 正解
         self.kanji_worksheet_idx = np.concatenate([
-                  self.list_x_idx
-                , self.list_a_idx
-                , self.list_d_idx
-                , self.list_w_idx
-                , self.list_m_idx])
+                self.list_x_idx,
+                self.list_a_idx,
+                self.list_d_idx,
+                self.list_w_idx,
+                self.list_m_idx])
 
         num = self.get_number_of_problem() - len(self.kanji_worksheet_idx)
         if num <= 0:
@@ -658,40 +656,16 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
                 # レアケースのため、出題数を削ることで対応する。
                 self.set_number_of_problem(len(self.kanji_worksheet_idx))
 
-    # 苦手モードの漢字プリントを作成する.
-    def create_weakness_mode_kanji_worksheet(self):
-        """苦手モードの漢字プリントを作成する."""
-        self.print_info("Weakness Mode")
-
-        # テスト問題を選定する.
-        # 問題数を取得する.
-        num = self.get_number_of_problem()
-
-        # 既に出題し、正解している問題を候補に挙げる.
-        list_o = self.get_kanji_worksheet_index(self.kCrctMk, sort=True)
-
-        if len(list_o) > 0:
-            # 間違えた問題を最優先で選ぶ.
-            hist = self.kanji_worksheet.loc[list_o, self.kHistory].str[-10:].str.count(self.kIncrctMk)
-            hist = hist.sort_values(ascending=False).head(num)
-            self.kanji_worksheet_idx = hist.sort_values(ascending=False).head(num).index.tolist()
-
-            # 指定数だけ問題を得られない場合もあるため、それを考慮して出題数を再設定する.
-            self.set_number_of_problem(len(self.kanji_worksheet_idx))
-        else:
-            # 問題を選出できなかったとき、練習モードと同じにする.
-            self.create_train_mode_kanji_worksheet()
-
     # 漢字プリントの出題問題の概要を表示する.
     def report_kanji_worksheet(self):
         """漢字プリントの出題問題の概要を表示する."""
         msg_list = [
-              '　　　　　未出題: '
-            , '　　　　　　正解: '
-            , '　　　　　不正解: '
-            , '明日以降に再実施: '
-            , '１週間後に再実施: '
-            , '１ヶ月後に再実施: '
+            '　　　　　未出題: ',
+            '　　　　　　正解: ',
+            '　　　　　不正解: ',
+            '明日以降に再実施: ',
+            '１週間後に再実施: ',
+            '１ヶ月後に再実施: '
         ]
 
         self.print_info('========================================')
@@ -753,7 +727,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
 
                     # 今回, 正解した場合.
                     if new == self.kCrctMk:
-                        if   old == self.kIncrctMk:  # x -> d
+                        if old == self.kIncrctMk:  # x -> d
                             key = self.kDayMk
                         elif old == self.kDayMk:     # d -> w
                             key = self.kWeekMk
@@ -783,14 +757,14 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
             fmt_err_msg.append(self.print_error('ログファイルの問題数と登録件数が不一致です. '))
             fmt_err_msg.append(self.print_error('結果の記入に間違いがあるか、未記入である可能性があります.'))
 
-        self.print_info(('--------------------------------------------------------------------------------'))
+        self.print_info('--------------------------------------------------------------------------------')
         self.print_info('＊　明日以降に再実施する問題を ' + str(result_dict[self.kDayMk]) + ' 件 登録しました.')
         self.print_info('＊　１週間後に再実施する問題を ' + str(result_dict[self.kWeekMk]) + ' 件 登録しました.')
         self.print_info('＊　１ヶ月後に再実施する問題を ' + str(result_dict[self.kMonthMk]) + ' 件 登録しました.')
         self.print_info('＊　不正解だった問題を ' + str(result_dict[self.kIncrctMk]) + ' 件 登録しました.')
         self.print_info('＊　正解だった問題を ' + str(result_dict[self.kCrctMk]) + ' 件 登録しました.')
         self.print_info('　　計 ' + str(sum) + ' 件 登録しました.')
-        self.print_info(('--------------------------------------------------------------------------------'))
+        self.print_info('--------------------------------------------------------------------------------')
 
         return len(opn_err_msg) != 0, opn_err_msg, len(fmt_err_msg) != 0, fmt_err_msg
 
@@ -804,13 +778,13 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         """
         # 漢字プリントを作成する.
         draw = KanjiWorkSheet_draw(
-              path
-            , self.get_student_name()
-            , self.get_grade()
-            , self.get_create_date()
-            , self.get_number_of_problem()
-            , self.worksheet[self.kProblem]
-            , self.kanji_worksheet_idx)
+            path,
+            self.get_student_name(),
+            self.get_grade(),
+            self.get_create_date(),
+            self.get_number_of_problem(),
+            self.worksheet[self.kProblem],
+            self.kanji_worksheet_idx)
 
         # PDFを作成する.
         draw.generate_pdf_kanji_worksheet()
@@ -832,10 +806,10 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         if os.path.exists(path):
             # ログファイルが存在する場合は、読み込みを行う.
             logs = pd.read_csv(
-                  path
-                , sep=','
-                , index_col=0
-                , encoding='shift-jis'
+                path,
+                sep=',',
+                index_col=0,
+                encoding='shift-jis'
             )
             self.print_info('ログファイル(' + path + ')を読み込みました.')
 
