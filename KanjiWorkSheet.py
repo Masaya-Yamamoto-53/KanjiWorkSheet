@@ -8,6 +8,11 @@ import pandas as pd
 
 from DebugPrint import DebugPrint
 
+
+def is_ruby_prefix(word):
+    return word == u'<'
+
+
 class KanjiWorkSheet:
     def __init__(self, debug=False):
         # デバッグ情報を表示する場合はTrue
@@ -38,21 +43,21 @@ class KanjiWorkSheet:
         ]
 
         # 漢字テストの結果
-        self.kNotMk    = '-'
-        self.kCrctMk   = 'o'
+        self.kNotMk = '-'
+        self.kCrctMk = 'o'
         self.kIncrctMk = 'x'
-        self.kDayMk    = 'd'
-        self.kWeekMk   = 'w'
-        self.kMonthMk  = 'm'
+        self.kDayMk = 'd'
+        self.kWeekMk = 'w'
+        self.kMonthMk = 'm'
 
         # 漢字テストの辞書のキー
         self.report_key_list = [
-              self.kNotMk     # 未出題
-            , self.kCrctMk    # 正解
-            , self.kIncrctMk  # 不正解
-            , self.kDayMk     # 一日後
-            , self.kWeekMk    # 一週間後
-            , self.kMonthMk   # 一ヶ月後
+            self.kNotMk,     # 未出題
+            self.kCrctMk,    # 正解
+            self.kIncrctMk,  # 不正解
+            self.kDayMk,     # 一日後
+            self.kWeekMk,    # 一週間後
+            self.kMonthMk,   # 一ヶ月後
         ]
 
         # 問題集
@@ -365,9 +370,6 @@ class KanjiWorkSheet:
     def __is_ruby_fullwidth_suffix(self, word):
         return word == u'＞'
 
-    def __is_ruby_prefix(self, word):
-        return word == u'<'
-
     def __is_ruby_suffix(self, word):
         return word == u'>'
 
@@ -381,18 +383,18 @@ class KanjiWorkSheet:
     def __check_kanji_syntax(self, fmt_err_msg):
         n = len(self.worksheet[self.kProblem])
         for sentence, ans, num in zip(self.worksheet[self.kProblem], self.worksheet[self.kAnswer], range(n)):
-            r_inflag   = False  # ルビの True:開始記号<を通過したとき, False:ルビの終了記号>を通過したとき
+            r_inflag = False  # ルビの True:開始記号<を通過したとき, False:ルビの終了記号>を通過したとき
             r_nest_err = False  # ルビの指定文字が True:入れ子になっているとき, False:入れ子になっていないとき
-            r_cnt_err  = False  # ルビの文字数が True:0のとき, False:1以上のとき
-            r_err      = False  # ルビの True:何れかが大文字, False:すべてルビが小文字
+            r_cnt_err = False  # ルビの文字数が True:0のとき, False:1以上のとき
+            r_err = False  # ルビの True:何れかが大文字, False:すべてルビが小文字
 
             r_word_cnt = 0  # ルビの文字数
 
-            p_inflag   = False  # 問題の True:開始記号[を通過したとき, False:問題枠の終了記号]を通過したとき
+            p_inflag = False  # 問題の True:開始記号[を通過したとき, False:問題枠の終了記号]を通過したとき
             p_nest_err = False  # 問題枠の True:指定文字が入れ子になっているとき, False:問題枠の指定文字が入れ子になっていないとき
-            p_cnt_err  = False  # 問題の True:文字数が0のとき, False:問題の文字数が1以上のとき
+            p_cnt_err = False  # 問題の True:文字数が0のとき, False:問題の文字数が1以上のとき
 
-            p_word_cnt  = 0  # 問題枠の文字数
+            p_word_cnt = 0  # 問題枠の文字数
             p_frame_cnt = 0  # 問題枠の数
 
             for word in list(sentence):
@@ -402,7 +404,7 @@ class KanjiWorkSheet:
                 # 問題文のルビ<>が全角であることを確認する.
                 if self.__is_ruby_fullwidth_prefix(word) or self.__is_ruby_fullwidth_suffix(word):
                     r_err = True
-                if self.__is_ruby_prefix(word):
+                if is_ruby_prefix(word):
                     # 入れ子判定: '<'の後に、'>'ではなく、'<'が来たとき
                     if r_inflag:
                         r_nest_err = True
@@ -417,7 +419,7 @@ class KanjiWorkSheet:
                             r_cnt_err = True
                     r_inflag = False
                     r_word_cnt = 0
-                if r_inflag and (not self.__is_ruby_prefix(word)):
+                if r_inflag and (not is_ruby_prefix(word)):
                     r_word_cnt += 1
                 ##########################################################
                 # 問題文の問題枠が入れ子になっていないか、文字が入っていないか確認する.
