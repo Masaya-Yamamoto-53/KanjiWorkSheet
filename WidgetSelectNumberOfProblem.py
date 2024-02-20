@@ -21,10 +21,10 @@ class WidgetSelectNumberOfProblem:
         self.SelectNumberOfProblemFrame_Value.set('')
         self.SelectNumberOfProblemFrame_Value.trace_add('write', self.Event_ChangeNumberOfProblem)
         self.SelectNumberOfProblemFrame_Entry = tk.Entry(
-            self.SelectNumberOfProblemFrame
-            , width=10
-            , textvariable=self.SelectNumberOfProblemFrame_Value
-            , state=tk.DISABLED
+            self.SelectNumberOfProblemFrame,
+            width=10,
+            textvariable=self.SelectNumberOfProblemFrame_Value,
+            state=tk.DISABLED
         )
         self.SelectNumberOfProblemFrame_Entry.pack(side=tk.LEFT)
 

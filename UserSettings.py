@@ -5,6 +5,7 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 import pandas as pd
 
+
 class UserSettings:
     def __init__(self):
         self.kStudentName = 'Name'
@@ -18,21 +19,21 @@ class UserSettings:
         self.kJS5 = '小学五年生'
         self.kJS6 = '小学六年生'
         self.kGradeKeyList = [
-              self.kJS1
-            , self.kJS2
-            , self.kJS3
-            , self.kJS4
-            , self.kJS5
-            , self.kJS6
+            self.kJS1,
+            self.kJS2,
+            self.kJS3,
+            self.kJS4,
+            self.kJS5,
+            self.kJS6
         ]
         self.kMode = '出題形式'
         self.kModeReview = 0  # 復習モード
         self.kModeTrain = 1  # 練習モード
         self.kModeWeak = 2  # 苦手モード
         self.kModeValueList = [
-              self.kModeReview
-            , self.kModeTrain
-            , self.kModeWeak
+            self.kModeReview,
+            self.kModeTrain,
+            self.kModeWeak
         ]
 
         # 設定ファイル
@@ -41,16 +42,16 @@ class UserSettings:
 
         # 設定ファイルの項目
         self.setting_columns = [
-              self.kStudentName
-            , self.kProblemPath
-            , self.kNumber
-            , self.kJS1
-            , self.kJS2
-            , self.kJS3
-            , self.kJS4
-            , self.kJS5
-            , self.kJS6
-            , self.kMode
+            self.kStudentName,
+            self.kProblemPath,
+            self.kNumber,
+            self.kJS1,
+            self.kJS2,
+            self.kJS3,
+            self.kJS4,
+            self.kJS5,
+            self.kJS6,
+            self.kMode
         ]
         # エンコーディング
         self.encoding = 'shift-jis'
@@ -61,9 +62,9 @@ class UserSettings:
         try:
             # .setting ファイルを開く.
             self.setting_data = pd.read_csv(
-                  self.path_of_setting_file
-                , sep=','
-                , encoding=self.encoding
+                self.path_of_setting_file,
+                sep=',',
+                encoding=self.encoding
             )
         # .setting ファイルがない場合は新規作成する.
         except FileNotFoundError:
@@ -79,10 +80,10 @@ class UserSettings:
         # 設定ファイルを書き込む.
         try:
             self.setting_data.to_csv(
-                  self.path_of_setting_file
-                , sep=','
-                , index=False
-                , encoding=self.encoding
+                self.path_of_setting_file,
+                sep=',',
+                index=False,
+                encoding=self.encoding
             )
         # 設定ファイルを開くなどして, 書き込みができない.
         except PermissionError:
@@ -94,16 +95,16 @@ class UserSettings:
     # 生徒を設定ファイルに登録する.
     def register_student(self, name):
         pd_data = pd.DataFrame({
-              self.kStudentName: [name]
-            , self.kProblemPath: ['']
-            , self.kNumber: [self.kMaxNumber]
-            , self.kJS1: [False]
-            , self.kJS2: [False]
-            , self.kJS3: [False]
-            , self.kJS4: [False]
-            , self.kJS5: [False]
-            , self.kJS6: [False]
-            , self.kMode: [self.kModeTrain]
+            self.kStudentName: [name],
+            self.kProblemPath: [''],
+            self.kNumber: [self.kMaxNumber],
+            self.kJS1: [False],
+            self.kJS2: [False],
+            self.kJS3: [False],
+            self.kJS4: [False],
+            self.kJS5: [False],
+            self.kJS6: [False],
+            self.kMode: [self.kModeTrain]
         })
         # 設定ファイルにデータを結合し, インデックスを更新する.
         self.setting_data = pd.concat([self.setting_data, pd_data], axis=0)

@@ -15,13 +15,13 @@ class WidgetReport:
 
         self.kTotal = '　　　合計'
         self.kGradeReportList = [
-              self.UserSettings.kJS1
-            , self.UserSettings.kJS2
-            , self.UserSettings.kJS3
-            , self.UserSettings.kJS4
-            , self.UserSettings.kJS5
-            , self.UserSettings.kJS6
-            , self.kTotal
+            self.UserSettings.kJS1,
+            self.UserSettings.kJS2,
+            self.UserSettings.kJS3,
+            self.UserSettings.kJS4,
+            self.UserSettings.kJS5,
+            self.UserSettings.kJS6,
+            self.kTotal
         ]
 
         # 出題内容ラベルフレーム

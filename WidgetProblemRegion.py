@@ -26,12 +26,12 @@ class WidgetProblemRegion:
 
         # チェックボタンを作成する.
         frame_list = [
-              self.ProblemRegionFrame_Lft
-            , self.ProblemRegionFrame_Lft
-            , self.ProblemRegionFrame_Lft
-            , self.ProblemRegionFrame_Rgt
-            , self.ProblemRegionFrame_Rgt
-            , self.ProblemRegionFrame_Rgt
+            self.ProblemRegionFrame_Lft,
+            self.ProblemRegionFrame_Lft,
+            self.ProblemRegionFrame_Lft,
+            self.ProblemRegionFrame_Rgt,
+            self.ProblemRegionFrame_Rgt,
+            self.ProblemRegionFrame_Rgt
         ]
         self.ProblemRegionFrame_Checkbutton_Value = {}
         self.ProblemRegionFrame_Checkbutton = {}
@@ -41,11 +41,11 @@ class WidgetProblemRegion:
 
             # チェックボックスの左側を作成する.
             self.ProblemRegionFrame_Checkbutton[key] = tk.Checkbutton(
-                  frame
-                , text=key
-                , command=self.Event_CheckButton
-                , variable=self.ProblemRegionFrame_Checkbutton_Value[key]
-                , state=tk.DISABLED
+                frame,
+                text=key,
+                command=self.Event_CheckButton,
+                variable=self.ProblemRegionFrame_Checkbutton_Value[key],
+                state=tk.DISABLED
             )
             self.ProblemRegionFrame_Checkbutton[key].pack(side=tk.TOP)
 

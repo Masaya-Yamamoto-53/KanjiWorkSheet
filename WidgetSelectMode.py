@@ -16,14 +16,14 @@ class WidgetSelectMode:
         self.kMDTR = '練習'
         self.kMDWK = '苦手'
         self.kModeKeyList = [
-              self.kMDRW
-            , self.kMDTR
-            , self.kMDWK
+            self.kMDRW,
+            self.kMDTR,
+            self.kMDWK
         ]
         self.kModeValueList = [
-              0
-            , 1
-            , 2
+            0,
+            1,
+            2
         ]
 
         # 出題モードフレーム
@@ -38,13 +38,13 @@ class WidgetSelectMode:
         for key, value in zip(self.kModeKeyList, self.kModeValueList):
             # チェックボックスの左側を作成する.
             self.SelectModeFrame_Radiobutton[key] = tk.Radiobutton(
-                self.SelectModeFrame
-                , text=key
-                , command=self.Event_RadioButton
-                , variable=self.radio_value
-                , value=value
-                , anchor='w'
-                , state=tk.DISABLED
+                self.SelectModeFrame,
+                text=key,
+                command=self.Event_RadioButton,
+                variable=self.radio_value,
+                value=value,
+                anchor='w',
+                state=tk.DISABLED
             )
             self.SelectModeFrame_Radiobutton[key].pack(side='left')
 

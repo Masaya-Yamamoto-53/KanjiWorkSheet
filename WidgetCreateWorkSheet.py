@@ -21,21 +21,23 @@ class WidgetCreateWorkSheet:
 
         # 作成ボタン
         self.Create_Button = tk.Button(
-              self.CreateWorkSheetFrame
-            , text='プリント作成'
-            , command=self.Event_CreateKanjiWorkSheet
-            , state=tk.DISABLED
-            , width=10, height=2
+            self.CreateWorkSheetFrame,
+            text='プリント作成',
+            command=self.Event_CreateKanjiWorkSheet,
+            state=tk.DISABLED,
+            width=10,
+            height=2
         )
         self.Create_Button.pack(side=tk.LEFT)
 
         # 印刷ボタン
         self.Print_Button = tk.Button(
-              self.CreateWorkSheetFrame
-            , text='印刷'
-            , command=self.Event_PrintOut
-            , state=tk.DISABLED
-            , width=10, height=2
+            self.CreateWorkSheetFrame,
+            text='印刷',
+            command=self.Event_PrintOut,
+            state=tk.DISABLED,
+            width=10,
+            height=2
         )
         self.Print_Button.pack(side=tk.LEFT, padx=5)
 

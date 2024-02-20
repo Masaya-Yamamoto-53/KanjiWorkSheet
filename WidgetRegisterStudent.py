@@ -23,9 +23,9 @@ class WidgetRegisterStudent:
 
         # 生徒登録ボタン
         self.RegisterStudentFrame_Button = tk.Button(
-              self.RegisterStudentFrame
-            , text='登録'
-            , command=self.Event_RegisterStudent
+            self.RegisterStudentFrame,
+            text='登録',
+            command=self.Event_RegisterStudent
         )
         self.RegisterStudentFrame_Button.pack(side=tk.LEFT)
 

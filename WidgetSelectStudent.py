@@ -29,21 +29,21 @@ class WidgetSelectStudent:
 
         self.SelectStudentFrame_Combobox_Value = tk.StringVar()
         self.SelectStudentFrame_Combobox = tk.ttk.Combobox(
-              self.SelectStudentFrame
-            , values=values
-            , textvariable=self.SelectStudentFrame_Combobox_Value
-            , postcommand=self.Event_UpdateStudent
-            , width=37
+            self.SelectStudentFrame,
+            values=values,
+            textvariable=self.SelectStudentFrame_Combobox_Value,
+            postcommand=self.Event_UpdateStudent,
+            width=37
         )
         self.SelectStudentFrame_Combobox.bind('<<ComboboxSelected>>', self.Event_SelectStudent)
         self.SelectStudentFrame_Combobox.pack(side=tk.LEFT)
 
         # 生徒削除ボタン
         self.SelectStudentFrame_Button = tk.Button(
-              self.SelectStudentFrame
-            , text='削除'
-            , command=self.Event_DeleteStudent
-            , state=tk.DISABLED
+            self.SelectStudentFrame,
+            text='削除',
+            command=self.Event_DeleteStudent,
+            state=tk.DISABLED
         )
         self.SelectStudentFrame_Button.pack(side=tk.LEFT)
 

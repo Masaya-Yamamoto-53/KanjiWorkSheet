@@ -21,19 +21,19 @@ class WidgetSelectWorkSheetPath:
         # 問題集選択エントリー
         self.SelectWorksheetPath_Value = tk.StringVar()
         self.SelectWorksheetPath_Entry = tk.Entry(
-              self.SelectWorksheetPath
-            , textvariable=self.SelectWorksheetPath_Value
-            , width=40
-            , state='readonly'
+            self.SelectWorksheetPath,
+            textvariable=self.SelectWorksheetPath_Value,
+            width=40,
+            state='readonly'
         )
         self.SelectWorksheetPath_Entry.pack(side=tk.LEFT)
 
         # 問題集選択ボタン
         self.SelectWorksheetPath_Button = tk.Button(
-              self.SelectWorksheetPath
-            , text='選択'
-            , command=self.Event_SelectKanjiWorkSheet
-            , state=tk.DISABLED
+            self.SelectWorksheetPath,
+            text='選択',
+            command=self.Event_SelectKanjiWorkSheet,
+            state=tk.DISABLED
         )
         self.SelectWorksheetPath_Button.pack(side=tk.LEFT)
 
@@ -49,8 +49,8 @@ class WidgetSelectWorkSheetPath:
     def Event_SelectKanjiWorkSheet(self):
         self.DebugPrint.print_info('Call: Event_SelectKanjiWorkSheet')
         path = filedialog.askopenfilename(
-              filetypes=[('', '*.csv')]
-            , initialdir=os.path.abspath(os.path.dirname(__file__))
+            filetypes=[('', '*.csv')],
+            initialdir=os.path.abspath(os.path.dirname(__file__))
         )
         # ファイルパスが有効なとき
         if len(path) > 0:

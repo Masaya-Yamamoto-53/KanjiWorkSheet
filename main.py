@@ -14,7 +14,7 @@ if __name__ == '__main__':
             # ディスプレイの拡大/縮小が100%以外に設定されている場合、
             # DPI認識モードが未設定のため、文字が荒くなる。
             ctypes.windll.shcore.SetProcessDpiAwareness(True)
-        except:
+        except (AttributeError, ctypes.WinError):
             pass
 
     # 漢字プリント作成アプリの起動

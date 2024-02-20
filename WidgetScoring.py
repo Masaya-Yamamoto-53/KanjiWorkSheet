@@ -73,21 +73,22 @@ class WidgetScoring:
 
             # 答えテキスト
             self.ScoringFrame_AnsFrame_Text[key] = tk.Text(
-                  self.ScoringFrame_AnsFrame_UB[key]
-                , width=2
-                , height=4
-                , state=tk.DISABLED
+                self.ScoringFrame_AnsFrame_UB[key],
+                width=2,
+                height=4,
+                state=tk.DISABLED
             )
             self.ScoringFrame_AnsFrame_Text[key].configure(font=('msmincho', 18))
             self.ScoringFrame_AnsFrame_Text[key].pack(side=tk.TOP)
 
             # ○／×ボタン
             self.ScoringFrame_AnsFrame_Button[key] = tk.Button(
-                  self.ScoringFrame_AnsFrame_UB[key]
-                , text='―'
-                , state=tk.DISABLED
-                , command=partial(self.Event_ChangeResult, key)
-                , width=2, height=1
+                self.ScoringFrame_AnsFrame_UB[key],
+                text='―',
+                state=tk.DISABLED,
+                command=partial(self.Event_ChangeResult, key),
+                width=2,
+                height=1
             )
             self.ScoringFrame_AnsFrame_Button[key].pack(side=tk.TOP)
             self.ScoringFrame_AnsFrame_Value[key] = None
@@ -103,8 +104,8 @@ class WidgetScoring:
     def Event_PushBtnScoreing(self):
         self.DebugPrint.print_info('Call: Event_PushBtnScoreing')
         keys = [
-              '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'
-            , '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
+            '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
+            '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
         ]
         path = self.get_path_of_log()
         (err, err_msg, ans_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(path, self.KanjiWorkSheet.kAnswer)
