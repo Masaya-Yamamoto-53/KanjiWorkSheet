@@ -28,7 +28,7 @@ class KanjiWorkSheet_draw:
         self.kanji_problem_idx = problem_idx  # 問題文の要素番号
 
         # フォント選択
-        self.kFontPath = 'C:\Windows\Fonts\msmincho.ttc'
+        self.kFontPath = r'C:\Windows\Fonts\msmincho.ttc'
         self.kFont = 'msmincho'
         pdfmetrics.registerFont(TTFont(self.kFont, self.kFontPath))  # フォント選択
 
