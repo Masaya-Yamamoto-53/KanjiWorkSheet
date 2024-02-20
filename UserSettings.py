@@ -7,17 +7,31 @@ import pandas as pd
 
 
 class UserSettings:
+    _instance = None
+    _initialized = False
+    # シングルトンパターン
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super(UserSettings, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self):
+        # 初期化が完了していれば, 以降をスキップする.
+        if self._initialized:
+            return
+        self._initialized = True
+
         self.kStudentName = 'Name'
         self.kProblemPath = 'Path'
         self.kNumber = 'Number'
         self.kMaxNumber = 20
-        self.kJS1 = '小学一年生'
-        self.kJS2 = '小学二年生'
-        self.kJS3 = '小学三年生'
-        self.kJS4 = '小学四年生'
-        self.kJS5 = '小学五年生'
-        self.kJS6 = '小学六年生'
+        self.kJS1 = u'小学一年生'
+        self.kJS2 = u'小学二年生'
+        self.kJS3 = u'小学三年生'
+        self.kJS4 = u'小学四年生'
+        self.kJS5 = u'小学五年生'
+        self.kJS6 = u'小学六年生'
         self.kGradeKeyList = [
             self.kJS1,
             self.kJS2,
@@ -26,7 +40,7 @@ class UserSettings:
             self.kJS5,
             self.kJS6
         ]
-        self.kMode = '出題形式'
+        self.kMode = u'出題形式'
         self.kModeReview = 0  # 復習モード
         self.kModeTrain = 1  # 練習モード
         self.kModeWeak = 2  # 苦手モード
@@ -37,7 +51,7 @@ class UserSettings:
         ]
 
         # 設定ファイル
-        self.path_of_setting_file = './.setting'
+        self.path_of_setting_file = r'./.setting'
         self.setting_data = pd.DataFrame()
 
         # 設定ファイルの項目
@@ -54,7 +68,7 @@ class UserSettings:
             self.kMode
         ]
         # エンコーディング
-        self.encoding = 'shift-jis'
+        self.encoding = u'shift-jis'
 
     # 設定ファイルを読み込む.
     def load_setting_file(self):
@@ -85,9 +99,9 @@ class UserSettings:
                 index=False,
                 encoding=self.encoding
             )
-        # 設定ファイルを開くなどして, 書き込みができない.
+        # 設定ファイルを開くなど, 書き込みができない.
         except PermissionError:
-            msg = '問題集(' + self.path_of_setting_file + ')を閉じてください. 更新できません.'
+            msg = u'問題集(' + self.path_of_setting_file + ')を閉じてください. 更新できません.'
             wrt_err_msg.append(msg)
 
         return len(wrt_err_msg) != 0, wrt_err_msg
@@ -135,12 +149,11 @@ class UserSettings:
 
     # 問題集のパスを設定する.
     def set_path_of_problem(self, name, path):
-        i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
-        self.setting_data.iloc[i, self.setting_data.columns.get_loc(self.kProblemPath)] = path
+        self.setting_data.at[self.get_index(name), self.kProblemPath] = path
 
     # 問題集のパスを取得する.
     def get_path_of_problem(self, name):
-        path = str(self.setting_data[self.setting_data[self.kStudentName] == name][self.kProblemPath].values[0])
+        path = str(self.setting_data.at[self.get_index(name), self.kProblemPath])
         # Nanの場合は空欄にする.
         if path == 'nan':
             path = ''
@@ -148,28 +161,25 @@ class UserSettings:
 
     # 出題数を設定する.
     def set_number_of_problem(self, name, num):
-        i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
-        self.setting_data.iloc[i, self.setting_data.columns.get_loc(self.kNumber)] = num
+        self.setting_data.at[self.get_index(name), self.kNumber] = num
 
     # 出題数を取得する.
     def get_number_of_problem(self, name):
-        num = self.setting_data[self.setting_data[self.kStudentName] == name][self.kNumber].values[0]
-        return num
+        return self.setting_data.at[self.get_index(name), self.kNumber]
 
     # 学年の設定値を設定する.
     def set_grade_value(self, name, grade_key, value):
-        i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
-        self.setting_data.iloc[i, self.setting_data.columns.get_loc(grade_key)] = value
+        self.setting_data.at[self.get_index(name), grade_key] = value
 
     # 学年の設定値を取得する.
     def get_grade_value(self, name, grade_key):
-        return self.setting_data[self.setting_data[self.kStudentName] == name][grade_key].values[0]
+        return self.setting_data.at[self.get_index(name), grade_key]
 
     def get_grade_list(self, name):
         grade_list = []
         grade = 1
         for key in self.kGradeKeyList:
-            if self.setting_data[self.setting_data[self.kStudentName] == name][key].values[0]:
+            if self.setting_data.at[self.get_index(name), key]:
                 grade_list.append(grade)
             grade += 1
 
@@ -177,9 +187,12 @@ class UserSettings:
 
     # 出題形式を設定する.
     def set_mode(self, name, mode):
-        i = self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
-        self.setting_data.iloc[i, self.setting_data.columns.get_loc(self.kMode)] = mode
+        self.setting_data.at[self.get_index(name), self.kMode] = mode
 
     # 出題形式を取得する.
     def get_mode(self, name):
-        return self.setting_data[self.setting_data[self.kStudentName] == name][self.kMode].values[0]
+        return self.setting_data.at[self.get_index(name), self.kMode]
+
+    # UserSettingsの該当データのインデックスを取得する.
+    def get_index(self, name):
+        return self.setting_data[self.setting_data[self.kStudentName] == name].index[0]
