@@ -30,7 +30,7 @@ class KanjiWorkSheet_gui:
         self.UserSettings = UserSettings()
         self.Root = tk.Tk()
         self.Root.title(u'漢字プリント作成ツール')
-        self.Root.geometry('620x580')
+        self.Root.geometry('1200x1100')
         self.Root.resizable(False, False)
 
         # 設定ファイルを読み込む
