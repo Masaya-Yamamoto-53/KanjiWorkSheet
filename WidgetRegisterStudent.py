@@ -19,7 +19,7 @@ class WidgetRegisterStudent:
         self.RegisterStudentFrame.grid(row=row, column=column)
 
         # 生徒登録エントリー
-        self.RegisterStudentFrame_Entry = tk.Entry(self.RegisterStudentFrame, width=40)
+        self.RegisterStudentFrame_Entry = tk.Entry(self.RegisterStudentFrame, width=30)
         self.RegisterStudentFrame_Entry.pack(side=tk.LEFT)
 
         # 生徒登録ボタン

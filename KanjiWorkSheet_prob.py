@@ -22,7 +22,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
 
         self.list_x_idx = []  # 間違えた問題のインデックス
         self.list_a_idx = []  # 出題してからしばらく再出題していない問題のインデックス
-        self.list_d_idx = []  # 昨日間違えた問題のインデックス
+        self.list_d_idx = []  # 三日間前違えた問題のインデックス
         self.list_w_idx = []  # 一週間前に間違えた問題のインデックス
         self.list_m_idx = []  # 一ヶ月前に間違えた問題のインデックス
         self.list_n_idx = []  # 未出題のインデックス

@@ -42,7 +42,8 @@ class WidgetSelectStudent:
             values=values,
             textvariable=self.SelectStudentFrame_Combobox_Value,
             postcommand=self.Event_UpdateStudent,
-            width=37
+            width=27,
+            state = 'readonly'
         )
         self.SelectStudentFrame_Combobox.bind('<<ComboboxSelected>>', self.Event_SelectStudent)
         self.SelectStudentFrame_Combobox.pack(side=tk.LEFT)

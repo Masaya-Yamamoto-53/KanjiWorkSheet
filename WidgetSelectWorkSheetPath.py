@@ -23,7 +23,7 @@ class WidgetSelectWorkSheetPath:
         self.SelectWorksheetPath_Entry = tk.Entry(
             self.SelectWorksheetPath,
             textvariable=self.SelectWorksheetPath_Value,
-            width=40,
+            width=30,
             state='readonly'
         )
         self.SelectWorksheetPath_Entry.pack(side=tk.LEFT)
