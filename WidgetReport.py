@@ -7,6 +7,18 @@
 import tkinter as tk
 
 
+# 新旧の値を比較して増減を示すメッセージを作成する.
+def insert_fluctuation_msg(diff, old, new):
+    if diff == 1 and new < old:
+        msg = str(new) + '(↓' + str(old - new) + ')'
+    elif diff == 1 and new > old:
+        msg = str(new) + '(↑' + str(new - old) + ')'
+    else:
+        msg = str(new)
+
+    return msg
+
+
 class WidgetReport:
     # レポート用のウィジェット作成
     def __init__(self, debug_print, user_settings, root, row, column):
@@ -278,27 +290,27 @@ class WidgetReport:
             outnum = len(self.KanjiWorkSheet.get_problem_with_grade(grade)) \
                      - len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kNotMk))
 
-            msg = self.insert_fluc_msg(diff, outnum_old, outnum)
+            msg = insert_fluctuation_msg(diff, outnum_old, outnum)
             self.insert_report_outnum_entry(key, msg)
 
             crctnum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kCrctMk))
-            msg = self.insert_fluc_msg(diff, crctnum_old, crctnum)
+            msg = insert_fluctuation_msg(diff, crctnum_old, crctnum)
             self.insert_report_crctnum_entry(key, msg)
 
             inctnum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kIncrctMk))
-            msg = self.insert_fluc_msg(diff, inctnum_old, inctnum)
+            msg = insert_fluctuation_msg(diff, inctnum_old, inctnum)
             self.insert_report_inctnum_entry(key, msg)
 
             daynum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kDayMk))
-            msg = self.insert_fluc_msg(diff, daynum_old, daynum)
+            msg = insert_fluctuation_msg(diff, daynum_old, daynum)
             self.insert_report_daynum_entry(key, msg)
 
             wknum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kWeekMk))
-            msg = self.insert_fluc_msg(diff, wknum_old, wknum)
+            msg = insert_fluctuation_msg(diff, wknum_old, wknum)
             self.insert_report_wknum_entry(key, msg)
 
             mtnum = len(self.KanjiWorkSheet.get_problem_with_status(grade, self.KanjiWorkSheet.kMonthMk))
-            msg = self.insert_fluc_msg(diff, mtnum_old, mtnum)
+            msg = insert_fluctuation_msg(diff, mtnum_old, mtnum)
             self.insert_report_mtnum_entry(key, msg)
 
             self.disable_report_tolnum_entry(key)
@@ -468,13 +480,3 @@ class WidgetReport:
             return int(data)
         else:
             return 0
-
-    def insert_fluc_msg(self, diff, old, new):
-        if   diff == 1 and new < old:
-            msg = str(new) + '(↓' + str(old - new) + ')'
-        elif diff == 1 and new > old:
-            msg = str(new) + '(↑' + str(new - old) + ')'
-        else:
-            msg = str(new)
-
-        return msg

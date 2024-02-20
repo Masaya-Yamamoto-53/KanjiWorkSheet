@@ -12,6 +12,15 @@ from tkinter import messagebox
 class WidgetSelectStudent:
     # 生徒登録用のウィジェット作成
     def __init__(self, debug_print, user_settings, root, row, column):
+        self.KanjiWorkSheet = None
+        self.CreateFilePath = None
+        self.WidgetSelectWorkSheetPath = None
+        self.WidgetCreateWorkSheet = None
+        self.WidgetProblemRegion = None
+        self.WidgetSelectNumberOfProblem = None
+        self.WidgetSelectMode = None
+        self.WidgetScoring = None
+        self.WidgetReport = None
         self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
@@ -48,16 +57,16 @@ class WidgetSelectStudent:
         self.SelectStudentFrame_Button.pack(side=tk.LEFT)
 
     def set_class(
-              self
-            , kanji_worksheet
-            , create_file_path
-            , wg_select_work_sheet_path
-            , wg_create_worksheet
-            , wg_problem_region
-            , wg_select_number_of_problem
-            , wg_select_mode
-            , wg_scoring
-            , wg_report
+            self,
+            kanji_worksheet,
+            create_file_path,
+            wg_select_work_sheet_path,
+            wg_create_worksheet,
+            wg_problem_region,
+            wg_select_number_of_problem,
+            wg_select_mode,
+            wg_scoring,
+            wg_report
     ):
         self.KanjiWorkSheet = kanji_worksheet
         self.CreateFilePath = create_file_path
@@ -209,9 +218,9 @@ class WidgetSelectStudent:
                 self.WidgetReport.update_report()
 
     # 「生徒選択」エントリーのメニューを設定する.
-    def set_selected_student_list(self, list):
-        self.SelectStudentFrame_Combobox['values'] = list
-        if len(list) == 0:
+    def set_selected_student_list(self, name_list):
+        self.SelectStudentFrame_Combobox['values'] = name_list
+        if len(name_list) == 0:
             self.SelectStudentFrame_Combobox.set('')
 
     # 「生徒選択」エントリーのデータを取得する.
