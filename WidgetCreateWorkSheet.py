@@ -7,17 +7,20 @@ import os
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
+from Subject import Subject
+from DebugPrint import DebugPrint
+from UserSettings import UserSettings
 
 
-class WidgetCreateWorkSheet:
-    def __init__(self, debug_print, user_settings, root, row, column):
+class WidgetCreateWorkSheet(Subject):
+    def __init__(self, root, row, column):
+        Subject.__init__(self)
         self.CreateFilePath = None
         self.KanjiWorkSheet = None
         self.WidgetSelectStudent = None
         self.WidgetSelectWorkSheetPath = None
-        self.WidgetScoring = None
-        self.DebugPrint = debug_print  # デバッグ表示クラス
-        self.UserSettings = user_settings  # ユーザ設定クラス
+        self.DebugPrint = DebugPrint(debug=True)  # デバッグ表示クラス
+        self.UserSettings = UserSettings()  # ユーザ設定クラス
 
         # 作成フレーム
         self.CreateWorkSheetFrame = tk.Frame(root, padx=5, pady=10)
@@ -45,12 +48,11 @@ class WidgetCreateWorkSheet:
         )
         self.Print_Button.pack(side=tk.LEFT, padx=5)
 
-    def set_class(self, create_file_path, kanji_worksheet, wg_select_student, wg_select_work_sheet_path, wg_scoring):
+    def set_class(self, create_file_path, kanji_worksheet, wg_select_student, wg_select_work_sheet_path):
         self.CreateFilePath = create_file_path
         self.KanjiWorkSheet = kanji_worksheet
         self.WidgetSelectStudent = wg_select_student
         self.WidgetSelectWorkSheetPath = wg_select_work_sheet_path
-        self.WidgetScoring = wg_scoring
 
     # イベント発生条件:「プリント作成」ボタンを押したとき
     # 処理概要:漢字プリントを作成する.
@@ -88,6 +90,7 @@ class WidgetCreateWorkSheet:
 
             # 漢字プリントを作成する.
             if yes:
+                self.notify(self.kNotify_create_worksheet)
                 # ログファイルを削除する.
                 self.KanjiWorkSheet.delete_kanji_worksheet_logfile(log_path)
                 # 漢字プリントを作成する.
@@ -103,13 +106,13 @@ class WidgetCreateWorkSheet:
                 self.KanjiWorkSheet.create_pdf_kanji_worksheet(path)
 
                 # 採点を更新する.
-                self.WidgetScoring.update_scoring()
-                if result:
-                    # 「採点完了」ボタンを有効にする.
-                    self.WidgetScoring.enable_scoring_button()
-                else:
-                    # 「採点完了」ボタンを無効にする.
-                    self.WidgetScoring.disable_scoring_button()
+                #self.WidgetScoring.update_scoring()
+                #if result:
+                #    # 「採点完了」ボタンを有効にする.
+                #    self.WidgetScoring.enable_scoring_button()
+                #else:
+                #    # 「採点完了」ボタンを無効にする.
+                #    self.WidgetScoring.disable_scoring_button()
 
                 # 終了メッセージを表示する.
                 tk.messagebox.showinfo('Info', os.path.basename(path) + ' を作成しました.')
@@ -142,3 +145,20 @@ class WidgetCreateWorkSheet:
     # 「印刷」ボタンを無効にする.
     def disable_print_button(self):
         self.Print_Button['state'] = tk.DISABLED
+
+    def update(self, subject):
+        if subject.notify_status == subject.kNotify_delete_student:
+            # 「プリント作成」ボタンを無効にする。
+            self.disable_create_button()
+            # 「印刷」ボタンを無効にする。
+            self.disable_print_button()
+        elif subject.notify_status == subject.KNotify_load_successful:
+            # 「プリント作成」ボタンを有効にする。
+            self.enable_create_button()
+            # 「印刷」ボタンを有効にする。
+            self.enable_print_button()
+        elif subject.notify_status == subject.kNotify_load_failed:
+            # 「プリント作成」ボタンを無効にする。
+            self.disable_create_button()
+            # 「印刷」ボタンを無効にする。
+            self.disable_print_button()

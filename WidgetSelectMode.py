@@ -90,3 +90,14 @@ class WidgetSelectMode:
         for key in self.kModeKeyList:
             self.SelectModeFrame_Radiobutton[key]['state'] = tk.DISABLED
 
+    def update(self, subject):
+        if subject.notify_status == subject.kNotify_select_student:
+            # 「出題モード」のエントリーを有効にする。
+            self.enable_mode_Radiobutton()
+
+            # 設定ファイルからラジオボタンの設定を取得し、反映する。
+            name = subject.get_selected_student_name()
+            value = self.UserSettings.get_mode(name)
+            self.set_selected_student_mode(value)
+        elif subject.notify_status == subject.kNotify_delete_student:
+            self.disable_mode_Radiobutton()

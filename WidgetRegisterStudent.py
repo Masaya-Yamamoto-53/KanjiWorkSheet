@@ -5,13 +5,15 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 import tkinter as tk
 from tkinter import messagebox
+from DebugPrint import DebugPrint
+from UserSettings import UserSettings
 
 
 class WidgetRegisterStudent:
     # 生徒登録用のウィジェット作成
-    def __init__(self, debug_print, user_settings, root, row, column):
-        self.DebugPrint = debug_print  # デバッグ表示クラス
-        self.UserSettings = user_settings  # ユーザ設定クラス
+    def __init__(self, root, row, column):
+        self.DebugPrint = DebugPrint(debug=True)  # デバッグ表示クラス
+        self.UserSettings = UserSettings()  # ユーザ設定クラス
 
         # 生徒登録ラベルフレーム
         self.RegisterStudentFrame = tk.LabelFrame(root, padx=2, pady=2, text='生徒登録')

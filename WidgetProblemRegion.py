@@ -94,3 +94,18 @@ class WidgetProblemRegion:
             self.set_selected_student_grade(key, False)
             # 「出題範囲選択」のチェックボタンを無効にする.
             self.disable_grade_checkbutton()
+
+    def update(self, subject):
+        if subject.notify_status == subject.kNotify_select_student:
+            # 学年の設定を反映する。
+            for key in self.UserSettings.kGradeKeyList:
+                # 「出題範囲選択」のチェックボタンを有効にする。
+                self.enable_grade_checkbutton()
+                # 設定ファイルからチェックボタンの設定を取得し、反映する。
+                name = subject.get_selected_student_name()
+                value = str(self.UserSettings.get_grade_value(name, key))
+                self.set_selected_student_grade(key, value)
+
+        elif subject.notify_status == subject.kNotify_delete_student:
+            # チェックボタンの値をクリアし、チェックボタンを無効にする。
+            self.del_grade()

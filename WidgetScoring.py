@@ -292,3 +292,24 @@ class WidgetScoring:
             os.mkdir(logdir)
 
         return logdir + '.' + name + str(self.WidgetSelectMode.get_selected_student_mode()) + '.log'
+
+    def update(self, subject):
+        if subject.notify_status == subject.kNotify_select_student:
+            # 採点を更新する。
+            err_num = self.update_scoring()
+            if err_num == 0:
+                # 「採点完了」ボタンを有効にする。
+                self.enable_scoring_button()
+            else:
+                # 「採点完了」ボタンを無効にする。
+                self.disable_scoring_button()
+        elif subject.notify_status == subject.kNotify_delete_student:
+            # 「採点完了」ボタンを無効にする。
+            self.disable_scoring_button()
+            # 採点を更新する。
+            self.update_scoring()
+        elif subject.notify_status == subject.kNotify_create_worksheet:
+            # 採点を更新する。
+            self.update_scoring()
+            # 「採点完了」ボタンを有効にする。
+            self.enable_scoring_button()

@@ -5,12 +5,14 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 
 import tkinter as tk
+from DebugPrint import DebugPrint
+from UserSettings import UserSettings
 
 
 class WidgetSelectNumberOfProblem:
-    def __init__(self, debug_print, user_settings, root, row, column):
-        self.DebugPrint = debug_print  # デバッグ表示クラス
-        self.UserSettings = user_settings  # ユーザ設定クラス
+    def __init__(self, root, row, column):
+        self.DebugPrint = DebugPrint(debug=True)  # デバッグ表示クラス
+        self.UserSettings = UserSettings()  # ユーザ設定クラス
 
         # 出題数ラベルフレーム
         self.SelectNumberOfProblemFrame = tk.LabelFrame(root, padx=2, pady=2, text='出題数')
@@ -34,7 +36,7 @@ class WidgetSelectNumberOfProblem:
 
     # イベント発生条件:「出題数」エントリーを変更したとき
     # 処理概要:出題数を更新する.
-    def Event_ChangeNumberOfProblem(self, var, indx, mode):
+    def Event_ChangeNumberOfProblem(self, var, index, mode):
         self.DebugPrint.print_info('Call: Event_ChangeNumberOfProblem')
         num = self.get_number_of_problem()
 
@@ -54,7 +56,7 @@ class WidgetSelectNumberOfProblem:
     # 「出題数」エントリーを取得する.
     def get_number_of_problem(self):
         str = self.SelectNumberOfProblemFrame_Value.get()
-        if str.isdigit() == True:
+        if str.isdigit():
             return int(str)
         else:
             return 1
@@ -66,3 +68,16 @@ class WidgetSelectNumberOfProblem:
     # 「出題数」のエントリーを無効にする.
     def disable_number_of_problem_entry(self):
         self.SelectNumberOfProblemFrame_Entry['state'] = tk.DISABLED
+
+    def update(self, subject):
+        if subject.notify_status == subject.kNotify_select_student:
+            # 「出題数」のエントリーを有効にする。
+            self.enable_number_of_problem_entry()
+            # 選択した生徒の出題数を設定する。
+            name = subject.get_selected_student_name()
+            self.set_number_of_problem(self.UserSettings.get_number_of_problem(name))
+        elif subject.notify_status == subject.kNotify_delete_student:
+            # 問題数の値をクリアし、入力欄を無効にする。
+            self.set_number_of_problem('')
+            # 出題数のエントリーを無効にする。
+            self.disable_number_of_problem_entry()

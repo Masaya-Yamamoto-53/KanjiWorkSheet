@@ -480,3 +480,7 @@ class WidgetReport:
             return int(data)
         else:
             return 0
+
+    def update(self, subject):
+        # レポートを更新する。
+        self.update_report()

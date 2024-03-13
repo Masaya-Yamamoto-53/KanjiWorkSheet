@@ -66,23 +66,18 @@ class KanjiWorkSheet_gui:
         self.ModeFrame.grid(row=0, column=1)
 
         # 生徒登録用のウィジェット作成
-        self.wg_register_student = WidgetRegisterStudent(
-            self.DebugPrint, self.UserSettings, self.SelectFrame, row=0, column=0)
+        self.wg_register_student = WidgetRegisterStudent(self.SelectFrame, row=0, column=0)
         # 生徒選択用のウィジェット作成
-        self.wg_select_student = WidgetSelectStudent(
-            self.DebugPrint, self.UserSettings, self.SelectFrame, row=1, column=0)
+        self.wg_select_student = WidgetSelectStudent(self.SelectFrame, row=1, column=0)
         # 問題集選択用のウィジェット作成
-        self.wg_select_work_sheet_path = WidgetSelectWorkSheetPath(
-            self.DebugPrint, self.UserSettings, self.SelectFrame, row=2, column=0)
+        self.wg_select_work_sheet_path = WidgetSelectWorkSheetPath(self.SelectFrame, row=2, column=0)
         # プリント作成用ウィジェット
-        self.wg_create_worksheet = WidgetCreateWorkSheet(
-            self.DebugPrint, self.UserSettings, self.SelectFrame, row=4, column=0)
+        self.wg_create_worksheet = WidgetCreateWorkSheet(self.SelectFrame, row=4, column=0)
         # 出題範囲選択用のウィジェット作成
         self.wg_problem_region = WidgetProblemRegion(
             self.DebugPrint, self.UserSettings, self.GradeFrame, row=0, column=0)
         # 出題数用のウィジェット作成
-        self.wg_select_number_of_problem = WidgetSelectNumberOfProblem(
-            self.DebugPrint, self.UserSettings, self.ModeFrame, row=1, column=0)
+        self.wg_select_number_of_problem = WidgetSelectNumberOfProblem(self.ModeFrame, row=1, column=0)
         # 出題選択モードのウィジェット作成
         self.wg_select_mode = WidgetSelectMode(
             self.DebugPrint, self.UserSettings, self.ModeFrame, row=2, column=0)
@@ -102,30 +97,31 @@ class KanjiWorkSheet_gui:
         self.wg_select_student.set_class(
             self.KanjiWorkSheet,
             self.CreateFilePath,
-            self.wg_select_work_sheet_path,
-            self.wg_create_worksheet,
-            self.wg_problem_region,
-            self.wg_select_number_of_problem,
-            self.wg_select_mode,
-            self.wg_scoring,
-            self.wg_report
         )
+        self.wg_select_student.attach(self.wg_select_work_sheet_path)
+        self.wg_select_student.attach(self.wg_create_worksheet)
+        self.wg_select_student.attach(self.wg_problem_region)
+        self.wg_select_student.attach(self.wg_select_number_of_problem)
+        self.wg_select_student.attach(self.wg_select_mode)
+        self.wg_select_student.attach(self.wg_scoring)
+        self.wg_select_student.attach(self.wg_report)
+
         # 問題集選択用のウィジェット作成
         self.wg_select_work_sheet_path.set_class(
             self.KanjiWorkSheet,
-            self.wg_select_student,
-            self.wg_scoring,
-            self.wg_report,
-            self.wg_create_worksheet
+            self.wg_select_student
         )
+        self.wg_select_work_sheet_path.attach(self.wg_create_worksheet)
+
         # プリント作成用ウィジェット
         self.wg_create_worksheet.set_class(
             self.CreateFilePath,
             self.KanjiWorkSheet,
             self.wg_select_student,
-            self.wg_select_work_sheet_path,
-            self.wg_scoring
+            self.wg_select_work_sheet_path
         )
+        self.wg_select_work_sheet_path.attach(self.wg_scoring)
+
         # 出題範囲選択用のウィジェット作成
         self.wg_problem_region.set_class(
             self.wg_select_student
