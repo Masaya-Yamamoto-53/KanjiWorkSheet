@@ -120,7 +120,7 @@ class KanjiWorkSheet_gui:
             self.wg_select_student,
             self.wg_select_work_sheet_path
         )
-        self.wg_select_work_sheet_path.attach(self.wg_scoring)
+        self.wg_create_worksheet.attach(self.wg_scoring)
 
         # 出題範囲選択用のウィジェット作成
         self.wg_problem_region.set_class(

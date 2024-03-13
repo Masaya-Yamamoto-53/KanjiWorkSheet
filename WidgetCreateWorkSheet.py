@@ -90,7 +90,6 @@ class WidgetCreateWorkSheet(Subject):
 
             # 漢字プリントを作成する.
             if yes:
-                self.notify(self.kNotify_create_worksheet)
                 # ログファイルを削除する.
                 self.KanjiWorkSheet.delete_kanji_worksheet_logfile(log_path)
                 # 漢字プリントを作成する.
@@ -113,6 +112,8 @@ class WidgetCreateWorkSheet(Subject):
                 #else:
                 #    # 「採点完了」ボタンを無効にする.
                 #    self.WidgetScoring.disable_scoring_button()
+
+                self.notify(self.kNotify_create_worksheet)
 
                 # 終了メッセージを表示する.
                 tk.messagebox.showinfo('Info', os.path.basename(path) + ' を作成しました.')
