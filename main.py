@@ -6,7 +6,6 @@
 import platform
 import ctypes
 from KanjiWorkSheet_gui import KanjiWorkSheet_gui
-from Student import Student
 
 if __name__ == '__main__':
     # 暫定対策
