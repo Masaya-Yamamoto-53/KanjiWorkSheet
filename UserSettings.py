@@ -7,21 +7,7 @@ import pandas as pd
 
 
 class UserSettings:
-    _instance = None
-    _initialized = False
-    # シングルトンパターン
-
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super(UserSettings, cls).__new__(cls)
-        return cls._instance
-
     def __init__(self):
-        # 初期化が完了していれば, 以降をスキップする.
-        if self._initialized:
-            return
-        self._initialized = True
-
         self.kStudentName = 'Name'
         self.kProblemPath = 'Path'
         self.kNumber = 'Number'
@@ -41,13 +27,12 @@ class UserSettings:
             self.kJS6
         ]
         self.kMode = u'出題形式'
-        self.kModeReview = 0  # 復習モード
-        self.kModeTrain = 1  # 練習モード
-        self.kModeWeak = 2  # 苦手モード
+        self.kReview_Mode = 0    # 復習モード / Review mode
+        self.kTraining_Mode = 1  # 練習モード / Training mode
+
         self.kModeValueList = [
-            self.kModeReview,
-            self.kModeTrain,
-            self.kModeWeak
+            self.kReview_Mode,
+            self.kTraining_Mode
         ]
 
         # 設定ファイル
@@ -118,7 +103,7 @@ class UserSettings:
             self.kJS4: [False],
             self.kJS5: [False],
             self.kJS6: [False],
-            self.kMode: [self.kModeTrain]
+            self.kMode: [self.kTraining_Mode]
         })
         # 設定ファイルにデータを結合し, インデックスを更新する.
         self.setting_data = pd.concat([self.setting_data, pd_data], axis=0)
@@ -175,6 +160,10 @@ class UserSettings:
     def get_grade_value(self, name, grade_key):
         return self.setting_data.at[self.get_index(name), grade_key]
 
+    # 学年の列からTrueになっているものをリストに格納する.
+    # 例) '小学一年生' '小学二年生' '小学三年生' '小学四年生' '小学五年生' '小学六年生'
+    #     True       True       False      True       False       True
+    # grade_list = [1, 2, 4, 6]
     def get_grade_list(self, name):
         grade_list = []
         grade = 1

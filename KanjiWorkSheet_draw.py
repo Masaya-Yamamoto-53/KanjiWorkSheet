@@ -59,7 +59,7 @@ class KanjiWorkSheet_draw:
         self.problem_start_pos = 650  # 問題枠の開始位置
         self.problem_text_frame = []  # 問題枠
 
-    def generate_pdf_kanji_worksheet(self):
+    def create_pdf_kanji_worksheet(self):
         """漢字プリントを作成する."""
         # 出題数を上下に分割し、出題する。
         # 分割した時、10未満であれば、記載の間隔を10にする。

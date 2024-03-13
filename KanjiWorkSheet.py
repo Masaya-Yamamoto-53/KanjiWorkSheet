@@ -5,22 +5,21 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 import os
 import pandas as pd
-
 from DebugPrint import DebugPrint
-
-
-def is_ruby_prefix(word):
-    return word == u'<'
 
 
 class KanjiWorkSheet:
     def __init__(self, debug=False):
         # デバッグ情報を表示する場合はTrue
+        # Set to True if you want to display debug information
         self.DebugPrint = DebugPrint(debug=debug)
 
-        self.kGradeRange = [1, 6]  # 学年の最小値と最大値(上下限のチェックに使用)
+        # 学年の最小値と最大値(上下限のチェックに使用)
+        # Minimum and maximum grade levels (used for bounds checking)
+        self.kGradeRange = [1, 6]
 
         # 問題集/ログの列
+        # Columns in the problem set/log
         self.kGrade = '学年'
         self.kProblem = '問題文'
         self.kAnswer = '答え'
@@ -31,6 +30,7 @@ class KanjiWorkSheet:
         self.kHistory = '履歴'
 
         # 問題集/ログの辞書のキー
+        # Dictionary keys for the problem set/log
         self.kFileColumns = [
             self.kGrade,
             self.kProblem,
@@ -43,6 +43,7 @@ class KanjiWorkSheet:
         ]
 
         # 漢字テストの結果
+        # Results of kanji tests
         self.kNotMk = '-'
         self.kCrctMk = 'o'
         self.kIncrctMk = 'x'
@@ -51,6 +52,7 @@ class KanjiWorkSheet:
         self.kMonthMk = 'm'
 
         # 漢字テストの辞書のキー
+        # Dictionary keys for kanji tests
         self.report_key_list = [
             self.kNotMk,     # 未出題
             self.kCrctMk,    # 正解
@@ -60,189 +62,227 @@ class KanjiWorkSheet:
             self.kMonthMk,   # 一ヶ月後
         ]
 
-        # 問題集
-        self.path_of_worksheet = ''      # 問題集のパス
-        self.worksheet = pd.DataFrame()  # 問題集のデータを保持するデータフレーム
-
+        # 問題集のパス
+        # Path to the problem set
+        self.path_of_worksheet = ''
+        # 問題集のデータを保持するデータフレーム
+        # Data frame to hold the problem set data
+        self.worksheet = pd.DataFrame()
         # 学年毎の漢字リスト
+        # Kanji lists by grade level
         self.kanji_by_grade_list = [[] for _ in range(self.kGradeRange[1] + 1)]
 
-    # 漢字プリントの問題集を読み込む.
+    # 漢字の問題集を読み込む。
+    # Load the kanji worksheet.
     def load_worksheet(self, path):
         """
-        :parameter path: 問題集のパス
+        :parameter path: 問題集のパス / Path to the problem set
         :type path: string
 
-        漢字プリントの問題集を読み込む.
+        漢字の問題集を読み込む。
+        Load the kanji worksheet.
         """
         self.path_of_worksheet = path
         opn_err_msg = []
         fmt_err_msg = []
 
-        # ファイルが存在する.
+        # ファイルが存在する。
+        # If the file exists.
         if os.path.exists(self.path_of_worksheet):
             try:
-                # 問題集を読み込む.
+                # 問題集を読み込む。
+                # Read the problem set.
                 self.worksheet = pd.read_csv(self.path_of_worksheet, sep=',', encoding='shift-jis')
-                self.print_info('問題集(' + self.path_of_worksheet + ')の読み込みに成功しました.')
+                self.print_info('問題集(' + self.path_of_worksheet + ')の読み込みに成功しました。')
+            # ファイルが空だった場合
+            # If the file is empty.
+            except pd.errors.EmptyDataError:
+                fmt_err_msg.append(self.print_error('問題集が空です。'))
 
-            except pd.errors.EmptyDataError:  # ファイルが空だった場合
-                fmt_err_msg.append(self.print_error('問題集が空です.'))
-
-            # 問題集の内容をチェックする.
+            # 問題集の内容をチェックする。
+            # Check the content of the problem set.
             fmt_err_msg = self.__check_worksheet()
 
-        # ファイルが存在しない.
+        # ファイルが存在しない。
+        # If the file does not exist.
         else:
-            # データを初期化し, エラーメッセージを出力する.
+            # データを初期化し、エラーメッセージを出力する。
+            # Initialize data and output an error message.
             self.worksheet = pd.DataFrame()
-            opn_err_msg.append(self.print_error('問題集が存在しません.'))
+            opn_err_msg.append(self.print_error('問題集が存在しません。'))
 
-            # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
-            return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \
-                 , len(fmt_err_msg[0:5]) != 0, fmt_err_msg[0:5]
+            # エラーコードを出しすぎても仕方がないので、制限を5回までとする。
+            # Limit the error messages to 5.
+            return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5], len(fmt_err_msg[0:5]) != 0, fmt_err_msg[0:5]
 
         # 結果がself.report_key_list以外の場合は、self.kNotMkに置き換える。
+        # Replace results other than self.report_key_list with self.kNotMk.
         self.__replace_undef_char_with_NotMk()
 
         # 履歴がNanの場合は、''に置き換える。
+        # Replace NaN values in history with an empty string.
         self.__replace_nan_char_with_space()
 
-        # 学年毎の漢字を確認する.
+        # 学年毎の漢字を確認する。
+        # Check kanji by grade level.
         self.__create_list_kanji_by_grade()
 
-        # 学年毎の合計出題数を表示する.
-        for grade in range(self.kGradeRange[0], self.kGradeRange[-1]+1):
-            # 指定した学年の問題を取得する.
+        # 学年毎の合計出題数を表示する。
+        # Display the total number of questions per grade level.
+        for grade in range(self.kGradeRange[0], self.kGradeRange[-1] + 1):
+            # 指定した学年の問題を取得する。
+            # Get problems for the specified grade.
             problem = self.get_problem_with_grade([grade])
             p_value = 0
-            # 履歴から合計出題数を算出する.
+            # 履歴から合計出題数を算出する。
+            # Calculate the total number of questions from the history.
             for hist in problem[self.kHistory].values:
                 p_value += len(hist)
 
-            # 学年毎に合計出題数を出力する.
+            # 学年毎に合計出題数を出力する。
+            #  Output the total number of questions per grade.
             self.print_info(str(grade) + '年生: ' + str(p_value) + '問')
 
-        # エラーコードを出しすぎても仕方がないので、制限を5回までとする.
-        return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5] \
-             , len(fmt_err_msg[0:5]) != 0, fmt_err_msg[0:5]
+        # エラーコードを出しすぎても仕方がないので、制限を5回までとする。
+        # Limit the error messages to 5.
+        return len(opn_err_msg[0:5]) != 0, opn_err_msg[0:5], len(fmt_err_msg[0:5]) != 0, fmt_err_msg[0:5]
 
-    # 漢字プリントの問題集を書き込む.
+    # 漢字の問題集を書き込む。
+    # Save the kanji worksheet.
     def save_worksheet(self):
-        """漢字プリントの問題集を書き込む."""
+        """
+        漢字の問題集を書き込む。
+        Save the kanji worksheet.
+        """
         wrt_err_msg = []
 
-        # ファイルが存在する.
+        # ファイルが存在する。
+        # If the file exists.
         if os.path.exists(self.path_of_worksheet):
             try:
                 self.worksheet.to_csv(self.path_of_worksheet, index=False, encoding='shift-jis')
-                self.print_info('問題集(' + self.path_of_worksheet + ')を更新しました.')
-            # 問題集を開くなどして, 書き込みができない.
+                self.print_info('問題集(' + self.path_of_worksheet + ')を更新しました。')
+            # 問題集を開くなどして、書き込みができない。
+            # If unable to write due to the problem set being open, etc.
             except PermissionError:
-                msg = '問題集(' + self.path_of_worksheet + ')を閉じてください. 更新できません.'
+                msg = '問題集(' + self.path_of_worksheet + ')を閉じてください。更新できません。'
                 wrt_err_msg.append(self.print_error(msg))
-        # ファイルが存在しない.
+        # ファイルが存在しない。
+        # If the file does not exist.
         else:
-            wrt_err_msg.append(self.print_error('問題集が存在しません. 更新できませんでした.'))
+            wrt_err_msg.append(self.print_error('問題集が存在しません。更新できませんでした。'))
 
         return len(wrt_err_msg) != 0, wrt_err_msg
 
-    # 漢字プリントの問題集をチェックする.
+    # 漢字の問題集をチェックする。
+    # Check the kanji worksheet.
     def __check_worksheet(self):
         fmt_err_msg = []
 
-        # ファイル形式をチェックする.
+        # ファイル形式をチェックする。
+        # Check the file format.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_file_format()
-        # 欠損値をチェックする.
+        # 欠損値をチェックする。
+        # Check for missing values.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_column_nan(fmt_err_msg)
-        # 数値以外をチェックする.
+        # 数値以外をチェックする。
+        # Check for non-numeric values.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_column_non_numeric(fmt_err_msg)
-        # 整数以外をチェックする.
+        # 整数以外をチェックする。
+        # Check for non-integer values.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_column_non_integer(fmt_err_msg)
-        # 範囲外の数値をチェックする.
+        # 範囲外の数値をチェックする。
+        # Check for out-of-range values.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_column_out_of_range(fmt_err_msg)
-        # ルビの有無をチェック
+        # ルビの有無をチェックする。
+        # Check for presence of ruby annotations.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_kanji_ruby(fmt_err_msg)
-        # 問題文の構文をチェックする.
+        # 問題文の構文をチェックする。
+        # Check the syntax of problem statements.
         if len(fmt_err_msg) == 0:
             fmt_err_msg = self.__check_kanji_syntax(fmt_err_msg)
 
         return fmt_err_msg
 
-    # 問題集から指定したステータスに該当する問題を取得する.
+    # 問題集から指定したステータスに該当する問題を取得する。
+    # Retrieve problems from the worksheet that match the specified status.
     def get_problem_with_status(self, grade, status):
         """
-        :param grade: 学年
+        :param grade: 学年 / Grade level
         :type grade: list
-        :param status: 採点結果
+        :param status: 採点結果 / Scoring result
         :type status: string
 
-        問題集から指定したステータスに該当する問題を取得する.
+        問題集から指定したステータスに該当する問題を取得する。
+        Retrieve problems from the worksheet that match the specified status.
         """
         tmp = self.get_problem_with_grade(grade)
         return tmp[tmp[self.kResult] == status]
 
-    # 問題集から指定した学年の問題を取得する.
+    # 問題集から指定した学年の問題を取得する。
+    # Retrieve problems from the worksheet for the specified grade level.
     def get_problem_with_grade(self, grade):
         """
-        :param grade: 学年
+        :param grade: 学年 / Grade level
         :type grade: list
 
-        問題集から指定した学年の問題を取得する.
+        問題集から指定した学年の問題を取得する。
+        Retrieve problems from the worksheet for the specified grade level.
         """
         return self.worksheet[self.worksheet[self.kGrade].isin(grade)]
 
-    # 問題集から指定した答えの問題を取得する.
+    # 問題集から指定した答えの問題を取得する。
+    # Retrieve problems from the worksheet with the specified answer.
     def get_problem_with_answer(self, kanji, grade):
-        if type(grade) != type([]):
+        if not isinstance(grade, list):
             grade = [grade]
 
-        # 答えに指定した漢字が含まれている問題を抽出する.
+        # 答えに指定した漢字が含まれている問題を抽出する。
+        # Extract problems where the answer contains the specified kanji characters.
         temp = self.worksheet[self.worksheet[self.kAnswer].apply(lambda x: any(char in x for char in kanji))]
         grade_list = list(range(1, max(grade) + 1))
         return temp[temp[self.kGrade].isin(grade_list)]
 
-    # 指定した学年の漢字のリストを取得する.
+    # 指定した学年の漢字のリストを取得する。
+    # Retrieve the list of kanji characters for the specified grade level.
     def get_kanji_by_grade_list(self, grade):
         return self.kanji_by_grade_list[grade]
 
-    # 指定した学年の漢字が正解しているか否かを辞書形式で取得する.
-    # 辞書のキーは漢字で、データはTrueが正解、Falseが正解以外
+    # 指定した学年の漢字が正解しているか否かを辞書形式で取得する。
+    # Get a dictionary indicating whether each specified grade level kanji is correct or not.
+    # 辞書のキーは漢字で、データはTrueが正解、Falseが正解以外。
+    # The dictionary keys are kanji characters, and the values are True (correct) or False (not correct).
     def get_analysis_correct_kanji_by_grade_dict(self, grade):
-        # 指定した学年の漢字のリストを取得する.
+        # 指定した学年の漢字のリストを取得する。
+        # Get the list of kanji characters for the specified grade level.
         kanji_list = self.get_kanji_by_grade_list(grade)
         result_dict = {}
 
-        # 指定した学年の漢字だけ処理をする.
+        # 指定した学年の漢字だけ処理をする。
+        # Process only the kanji characters for the specified grade level.
         for kanji in kanji_list:
-            # 問題集から指定した答えの問題を取得する.
+            # 問題集から指定した答えの問題を取得する。
+            # Retrieve problems from the worksheet with the specified answer.
             problem_list = self.get_problem_with_answer(kanji, grade)
 
-            # 漢字毎に辞書化し、その漢字が正解しているか否かを確認する.
-            # 1つでも正解していれば正解と判断する.
-            # その漢字ではなく、熟語が分からず間違っている可能性があるため.
+            # 漢字毎に辞書化し、その漢字が正解しているか否かを確認する。
+            # Create a dictionary for each kanji character and check if it is correct.
+            # 1つでも正解していれば正解と判断する。
+            # If at least one problem is correct, consider the kanji as correct.#
+            # その漢字ではなく、熟語が分からず間違っている可能性があるため。
+            # It might be a compound word that the user doesn't recognize.
             result_dict[kanji] = False
             for result in problem_list[self.kResult]:
                 if result == self.kCrctMk:
                     result_dict[kanji] = True
 
         return result_dict
-
-    # 文字が漢字であるか否かを評価する.
-    def is_kanji(self, char):
-        """
-        :param char: 文字
-        :return: True:漢字, False:漢字以外
-
-        文字が漢字であるか否かを評価する.
-        """
-        return '\u4e00' <= char <= '\u9faf'
 
     # デバッグ情報を標準出力する.
     def print_info(self, msg):
@@ -334,11 +374,11 @@ class KanjiWorkSheet:
     def __check_column_out_of_range(self, fmt_err_msg):
         """範囲外の数値をチェックする."""
         # [学年] 列の範囲外の数値が入っていないか確認.
-        low  = len(self.worksheet[self.worksheet[self.kGrade] < self.kGradeRange[ 0]])
+        low = len(self.worksheet[self.worksheet[self.kGrade] < self.kGradeRange[0]])
         high = len(self.worksheet[self.worksheet[self.kGrade] > self.kGradeRange[-1]])
         if low != 0 or high != 0:
             msg = '[' + str(self.kGrade) + ']列には' \
-                  + str(self.kGradeRange[ 0]) + 'から' \
+                  + str(self.kGradeRange[0]) + 'から' \
                   + str(self.kGradeRange[-1]) + 'の範囲内にしてください.'
             fmt_err_msg.append(self.print_error(msg))
 
@@ -364,21 +404,6 @@ class KanjiWorkSheet:
 
         return fmt_err_msg
 
-    def __is_ruby_fullwidth_prefix(self, word):
-        return word == u'＜'
-
-    def __is_ruby_fullwidth_suffix(self, word):
-        return word == u'＞'
-
-    def __is_ruby_suffix(self, word):
-        return word == u'>'
-
-    def __is_problem_prefix(self, word):
-        return word == u'['
-
-    def __is_problem_suffix(self, word):
-        return word == u']'
-
     # 問題文の構文をチェックする.
     def __check_kanji_syntax(self, fmt_err_msg):
         n = len(self.worksheet[self.kProblem])
@@ -402,14 +427,14 @@ class KanjiWorkSheet:
                 # 問題文のルビ<>が入れ子になっていないか、文字が入っているか確認する.
                 ##########################################################
                 # 問題文のルビ<>が全角であることを確認する.
-                if self.__is_ruby_fullwidth_prefix(word) or self.__is_ruby_fullwidth_suffix(word):
+                if self.is_ruby_full_width_prefix(word) or self.is_ruby_full_width_suffix(word):
                     r_err = True
-                if is_ruby_prefix(word):
+                if self.is_ruby_prefix(word):
                     # 入れ子判定: '<'の後に、'>'ではなく、'<'が来たとき
                     if r_inflag:
                         r_nest_err = True
                     r_inflag = True
-                if self.__is_ruby_suffix(word):
+                if self.is_ruby_suffix(word):
                     # 入れ子判定: '<'の前に、'>'が来たとき
                     if not r_inflag:
                         r_nest_err = True
@@ -419,17 +444,17 @@ class KanjiWorkSheet:
                             r_cnt_err = True
                     r_inflag = False
                     r_word_cnt = 0
-                if r_inflag and (not is_ruby_prefix(word)):
+                if r_inflag and (not self.is_ruby_prefix(word)):
                     r_word_cnt += 1
                 ##########################################################
                 # 問題文の問題枠が入れ子になっていないか、文字が入っていないか確認する.
                 ##########################################################
-                if self.__is_problem_prefix(word):
+                if self.is_problem_prefix(word):
                     # 入れ子判定: '['の後に、']'ではなく、'['が来たとき
                     if p_inflag:
                         p_nest_err = True
                     p_inflag = True
-                if self.__is_problem_suffix(word):
+                if self.is_problem_suffix(word):
                     # 入れ子判定: '['の前に、']'が来たとき
                     if not p_inflag:
                         p_nest_err = True
@@ -442,7 +467,7 @@ class KanjiWorkSheet:
                         p_frame_cnt += 1
                     p_inflag = False
                     p_word_cnt = 0
-                if p_inflag and (not self.__is_problem_prefix(word)):
+                if p_inflag and (not self.is_problem_prefix(word)):
                     p_word_cnt += 1
 
             if r_cnt_err:
@@ -453,7 +478,7 @@ class KanjiWorkSheet:
                 msg = str(num + 1) + '行目の問題文のルビの記号が全角です.'
                 fmt_err_msg.append(self.print_error(msg))
 
-            if r_nest_err and r_err == False:
+            if r_nest_err and not r_err:
                 msg = str(num + 1) + '行目の問題文のルビの指定が入れ子になっています.'
                 fmt_err_msg.append(self.print_error(msg))
 
@@ -465,7 +490,7 @@ class KanjiWorkSheet:
                 msg = str(num + 1) + '行目の問題文の問題枠が空欄です.'
                 fmt_err_msg.append(self.print_error(msg))
 
-            if len(ans) != p_frame_cnt and p_nest_err == False and p_cnt_err == False:
+            if len(ans) != p_frame_cnt and not p_nest_err and not p_cnt_err:
                 msg = str(num + 1) + '行目の問題文の問題枠と答えの文字数が一致しません.'
                 fmt_err_msg.append(self.print_error(msg))
 
@@ -508,7 +533,8 @@ class KanjiWorkSheet:
                     self.kanji_by_grade_list[grade].append([char for char in ans])
 
                 # 多次元を1次元に変換
-                self.kanji_by_grade_list[grade] = [item for sublist in self.kanji_by_grade_list[grade] for item in sublist]
+                self.kanji_by_grade_list[grade] = [item for sublist in self.kanji_by_grade_list[grade] for item in
+                                                   sublist]
                 # ソートして、ユニークにする.
                 self.kanji_by_grade_list[grade] = sorted(self.kanji_by_grade_list[grade])
                 self.kanji_by_grade_list[grade] = list(set(self.kanji_by_grade_list[grade]))
@@ -520,3 +546,34 @@ class KanjiWorkSheet:
 
                 # 学年毎に習う漢字数を表示する.
                 self.print_info('小学' + str(grade) + '年生: 全 ' + str(len(self.kanji_by_grade_list[grade])) + ' 文字')
+
+    def is_ruby_prefix(self, word):
+        return word == u'<'
+
+    def is_ruby_full_width_prefix(self, word):
+        return word == u'＜'
+
+    def is_ruby_full_width_suffix(self, word):
+        return word == u'＞'
+
+    def is_ruby_suffix(self, word):
+        return word == u'>'
+
+    def is_problem_prefix(self, word):
+        return word == u'['
+
+    def is_problem_suffix(self, word):
+        return word == u']'
+
+    # 受け取った文字が漢字か否かを確認し、その結果を返す。
+    # Check if the received character is a kanji or not, and return the result.
+    def is_kanji(self, char):
+        """
+        :param char: 文字 / Character
+        :return: True:漢字 / Kanji, False:漢字以外 / Other than a Kanji
+
+        受け取った文字が漢字か否かを確認し、その結果を返す。
+        Check if the received character is a kanji or not, and return the result.
+        """
+        return '\u4e00' <= char <= '\u9faf'
+

@@ -3,7 +3,6 @@
 # Released under the MIT license.
 # see https://opensource.org/licenses/MIT (英語)
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
-
 import os
 import subprocess
 import tkinter as tk
@@ -12,6 +11,11 @@ from tkinter import messagebox
 
 class WidgetCreateWorkSheet:
     def __init__(self, debug_print, user_settings, root, row, column):
+        self.CreateFilePath = None
+        self.KanjiWorkSheet = None
+        self.WidgetSelectStudent = None
+        self.WidgetSelectWorkSheetPath = None
+        self.WidgetScoring = None
         self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
 
@@ -96,11 +100,11 @@ class WidgetCreateWorkSheet:
 
                 # 漢字プリントをPFDで作成する.
                 path = self.CreateFilePath.get_path_of_kanji_worksheet()
-                self.KanjiWorkSheet.generate_pdf_kanji_worksheet(path)
+                self.KanjiWorkSheet.create_pdf_kanji_worksheet(path)
 
                 # 採点を更新する.
                 self.WidgetScoring.update_scoring()
-                if result == True:
+                if result:
                     # 「採点完了」ボタンを有効にする.
                     self.WidgetScoring.enable_scoring_button()
                 else:

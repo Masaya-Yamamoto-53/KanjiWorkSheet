@@ -5,17 +5,25 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 
 import os
-
 from functools import partial
 import tkinter as tk
+from tkinter import messagebox
 
 
 class WidgetScoring:
     # 生徒登録用のウィジェット作成
     def __init__(self, debug_print, user_settings, root, row, column):
+        self.KanjiWorkSheet = None
+        self.WidgetSelectStudent = None
         self.WidgetSelectMode = None
+        self.WidgetReport = None
         self.DebugPrint = debug_print  # デバッグ表示クラス
         self.UserSettings = user_settings  # ユーザ設定クラス
+
+        self.keys = [
+            '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
+            '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
+        ]
 
         # 採点ラベルフレーム
         self.ScoringFrame = tk.LabelFrame(root, padx=2, pady=0, text='採点')
@@ -35,36 +43,36 @@ class WidgetScoring:
 
         # 採点ボタン
         self.Scoring_EndFrame_Button = tk.Button(
-            self.Scoring_EndFrame
-            , text='採点完了'
-            , command=self.Event_PushBtnScoreing
-            , state=tk.DISABLED
+            self.Scoring_EndFrame,
+            text='採点完了',
+            command=self.Event_PushBtnScoreing,
+            state=tk.DISABLED
         )
-        self.Scoring_EndFrame_Button.pack(side=tk.BOTTOM)
+        self.Scoring_EndFrame_Button.pack(side=tk.LEFT)
 
         i = 0
-        num_array = [
+        keys = [
               '⑩', '⑨', '⑧', '⑦', '⑥', '⑤', '④', '③', '②', '①'
             , '⑳', '⑲', '⑱', '⑰', '⑯', '⑮', '⑭', '⑬', '⑫', '⑪'
         ]
         self.kScoringFrame_AnsFrame = [
-              self.ScoringFrame_AnsFrame_Top , self.ScoringFrame_AnsFrame_Top
-            , self.ScoringFrame_AnsFrame_Top , self.ScoringFrame_AnsFrame_Top
-            , self.ScoringFrame_AnsFrame_Top , self.ScoringFrame_AnsFrame_Top
-            , self.ScoringFrame_AnsFrame_Top , self.ScoringFrame_AnsFrame_Top
-            , self.ScoringFrame_AnsFrame_Top , self.ScoringFrame_AnsFrame_Top
-            , self.ScoringFrame_AnsFrame_Btm , self.ScoringFrame_AnsFrame_Btm
-            , self.ScoringFrame_AnsFrame_Btm , self.ScoringFrame_AnsFrame_Btm
-            , self.ScoringFrame_AnsFrame_Btm , self.ScoringFrame_AnsFrame_Btm
-            , self.ScoringFrame_AnsFrame_Btm , self.ScoringFrame_AnsFrame_Btm
-            , self.ScoringFrame_AnsFrame_Btm , self.ScoringFrame_AnsFrame_Btm
+            self.ScoringFrame_AnsFrame_Top, self.ScoringFrame_AnsFrame_Top,
+            self.ScoringFrame_AnsFrame_Top, self.ScoringFrame_AnsFrame_Top,
+            self.ScoringFrame_AnsFrame_Top, self.ScoringFrame_AnsFrame_Top,
+            self.ScoringFrame_AnsFrame_Top, self.ScoringFrame_AnsFrame_Top,
+            self.ScoringFrame_AnsFrame_Top, self.ScoringFrame_AnsFrame_Top,
+            self.ScoringFrame_AnsFrame_Btm, self.ScoringFrame_AnsFrame_Btm,
+            self.ScoringFrame_AnsFrame_Btm, self.ScoringFrame_AnsFrame_Btm,
+            self.ScoringFrame_AnsFrame_Btm, self.ScoringFrame_AnsFrame_Btm,
+            self.ScoringFrame_AnsFrame_Btm, self.ScoringFrame_AnsFrame_Btm,
+            self.ScoringFrame_AnsFrame_Btm, self.ScoringFrame_AnsFrame_Btm
         ]
         self.ScoringFrame_AnsFrame_UB = {}
         self.ScoringFrame_AnsFrame_Lable = {}
         self.ScoringFrame_AnsFrame_Text = {}
         self.ScoringFrame_AnsFrame_Button = {}
         self.ScoringFrame_AnsFrame_Value = {}
-        for key in num_array:
+        for key in keys:
             self.ScoringFrame_AnsFrame_UB[key] = tk.Frame(self.kScoringFrame_AnsFrame[i], padx=0, pady=0)
             self.ScoringFrame_AnsFrame_UB[key].grid(row=0, column=i)
 
@@ -105,10 +113,7 @@ class WidgetScoring:
     # 処理概要:採点結果を問題集に反映する.
     def Event_PushBtnScoreing(self):
         self.DebugPrint.print_info('Call: Event_PushBtnScoreing')
-        keys = [
-            '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
-            '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
-        ]
+
         path = self.get_path_of_log()
         (err, err_msg, ans_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(path, self.KanjiWorkSheet.kAnswer)
         # 何らかのエラーメッセージを取得した場合は, メッセージボックスで通知する.
@@ -116,19 +121,19 @@ class WidgetScoring:
             tk.messagebox.showerror('Error', msg)
 
         # 採点フレームのスイッチの値から, 問題に正解したか否かを判断する.
-        unans = False
+        unanswered = False
         result = []
         for i in range(0, len(ans_list)):
-            status = self.get_scoring_answer_button_value(keys[i])
-            if status == None:
-                unans = True
+            status = self.get_scoring_answer_button_value(self.keys[i])
+            if status is None:
+                unanswered = True
             else:
-                if status == True:
+                if status:
                     result.append(self.KanjiWorkSheet.kCrctMk)
                 else:
                     result.append(self.KanjiWorkSheet.kIncrctMk)
 
-        if unans:
+        if unanswered:
             tk.messagebox.showerror('Error', '未回答の項目があります.')
         else:
             ################################################################################
@@ -144,14 +149,14 @@ class WidgetScoring:
                 for msg in fmt_err_msg:
                     tk.messagebox.showerror('Error', msg)
 
-            if opn_err == False and fmt_err == False:
+            if not opn_err and not fmt_err:
                 # 問題集を上書きする.
                 (wrt_err, wrt_err_msg) = self.KanjiWorkSheet.save_worksheet()
                 if wrt_err:
                     for msg in wrt_err_msg:
                         tk.messagebox.showerror('Error', msg)
 
-                if wrt_err != True:
+                if not wrt_err:
                     ################################################################################
                     # ログファイルを削除する.
                     self.KanjiWorkSheet.delete_kanji_worksheet_logfile(path)
@@ -170,19 +175,22 @@ class WidgetScoring:
     # 処理概要:ボタンが押されたとき, ボタンを○または, ×に切り替える.
     def Event_ChangeResult(self, key):
         self.set_scoring_answer_button_display_value(key, not self.get_scoring_answer_button_value(key))
-        if self.get_scoring_answer_button_value(key) == True:
-            self.set_scoring_answer_button_display(key, '○')
-        else:
+        if not self.get_scoring_answer_button_value(key):
             self.set_scoring_answer_button_display(key, '✕')
+        else:
+            self.set_scoring_answer_button_display(key, '○')
+
+    # イベント発生条件:「練習プリント」のボタンを押したとき
+    # 処理概要:ボタンが押されたとき, 練習用のプリントを作成する.
+    def Event_PushBtnTrain(self):
+        pass
 
     def update_scoring(self):
         """採点を更新する."""
         self.DebugPrint.print_info('Call: update_scoring')
-        keys = [
-            '①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'
-        ]
+
         # 採点の内容を削除
-        for key in keys:
+        for key in self.keys:
             # 答えを表示するフレームを初期化
             self.enable_scoring_answer_text(key)
             self.delete_scoring_answer_text(key)
@@ -195,22 +203,24 @@ class WidgetScoring:
             self.set_scoring_answer_button_display_value(key, None)
 
         # ログファイルから情報を取得し, 反映する.
-        (err_num, _, ans_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(self.get_path_of_log(), self.KanjiWorkSheet.kAnswer)
+        (err_num, _, ans_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(self.get_path_of_log(),
+                                                                                    self.KanjiWorkSheet.kAnswer)
         if err_num == 0:
             # 答えを印字
-            for ans, key in zip(ans_list, keys):
+            for ans, key in zip(ans_list, self.keys):
                 for ans_i in range(0, len(ans)):
                     self.enable_scoring_answer_text(key)
                     self.insert_scoring_answer_text(key, ans[ans_i])
                     self.insert_scoring_answer_text(key, '\n')
                     self.disable_scoring_answer_text(key)
 
-        (err_num, _, result_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(self.get_path_of_log(), self.KanjiWorkSheet.kResult)
+        (err_num, _, result_list) = self.KanjiWorkSheet.get_column_kanji_worksheet_log(self.get_path_of_log(),
+                                                                                       self.KanjiWorkSheet.kResult)
         if err_num == 0:
             # 結果を反映
-            for result, key in zip(result_list, keys):
+            for result, key in zip(result_list, self.keys):
                 self.enable_scoring_answer_button(key)
-                if   result == self.KanjiWorkSheet.kIncrctMk:
+                if result == self.KanjiWorkSheet.kIncrctMk:
                     self.set_scoring_answer_button_display_value(key, False)
                     self.set_scoring_answer_button_display(key, '✕')
                 elif result == self.KanjiWorkSheet.kCrctMk:
@@ -218,7 +228,7 @@ class WidgetScoring:
                     self.set_scoring_answer_button_display(key, '○')
                 else:
                     self.set_scoring_answer_button_display_value(key, None)
-                    if   result == self.KanjiWorkSheet.kDayMk:
+                    if result == self.KanjiWorkSheet.kDayMk:
                         self.set_scoring_answer_button_display(key, 'Ｄ')
                     elif result == self.KanjiWorkSheet.kWeekMk:
                         self.set_scoring_answer_button_display(key, 'Ｗ')
@@ -256,6 +266,7 @@ class WidgetScoring:
     # 「採点」ボタンのデータを設定する.
     def set_scoring_answer_button_display_value(self, key, value):
         self.ScoringFrame_AnsFrame_Value[key] = value
+
     #  「正解/不正解」入力ボタンを有効にする.
     def enable_scoring_answer_button(self, key):
         self.ScoringFrame_AnsFrame_Button[key]['state'] = tk.NORMAL

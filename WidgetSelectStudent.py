@@ -3,10 +3,11 @@
 # Released under the MIT license.
 # see https://opensource.org/licenses/MIT (英語)
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
-
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from DebugPrint import DebugPrint
+from UserSettings import UserSettings
 
 
 class WidgetSelectStudent:
@@ -43,7 +44,7 @@ class WidgetSelectStudent:
             textvariable=self.SelectStudentFrame_Combobox_Value,
             postcommand=self.Event_UpdateStudent,
             width=27,
-            state = 'readonly'
+            state='readonly'
         )
         self.SelectStudentFrame_Combobox.bind('<<ComboboxSelected>>', self.Event_SelectStudent)
         self.SelectStudentFrame_Combobox.pack(side=tk.LEFT)
