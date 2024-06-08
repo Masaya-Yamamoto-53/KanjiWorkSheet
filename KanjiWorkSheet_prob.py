@@ -470,7 +470,10 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
 
         # 期間の指定がある場合は、その期間に該当する問題文のみ抽出する.
         if days != -1:
-            delta = datetime.timedelta(days=days) < (now_time - pd.to_datetime(tmp_list[self.kLastUpdate]))
+            date_str = tmp_list[self.kLastUpdate]
+            date_str = date_str.replace("'", "")  # ここでreplaceの結果を再代入
+            print(type(date_str))
+            delta = datetime.timedelta(days=days) < (now_time - pd.to_datetime(date_str))
             tmp_list = tmp_list[delta]
 
         return tmp_list.index.values
@@ -690,7 +693,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
 
         # インデックスをマージする。
         # Merge the indices.
-        self.kanji_worksheet_idx = self.list_x_idx
+        self.kanji_worksheet_idx = self.list_x_idx[0:self.get_number_of_problem()]
         self.set_number_of_problem(len(self.list_x_idx))
 
     # 出題してからしばらく再出題していない漢字の問題のインデックスを取得する。
@@ -700,8 +703,8 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 最後の出題から30日以上経過した漢字の辞書を作成。
         # Create a dictionary of Kanji that has passed more than 30 days since the last question.
         kanji_dict = self.create_long_time_no_question_dict(
-            self.worksheet[self.kAnswer].tolist(),
-            self.worksheet[self.kLastUpdate].tolist(),
+            self.kanji_worksheet[self.kAnswer].tolist(),
+            self.kanji_worksheet[self.kLastUpdate].tolist(),
             days=30
         )
 

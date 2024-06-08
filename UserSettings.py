@@ -16,6 +16,8 @@ class UserSettings:
         return cls._instance
 
     def __init__(self):
+        # 2回目以降は初期化しない。
+        # Don't initialize after the second time.
         if UserSettings._initialized:
             return
         UserSettings._initialized = True
@@ -33,10 +35,10 @@ class UserSettings:
         self.kGradeKeyList = [
             self.kJS1, self.kJS2, self.kJS3, self.kJS4, self.kJS5, self.kJS6
         ]
+
         self.kMode = u'出題形式'
         self.kReview_Mode = 0    # 復習モード / Review mode
         self.kTraining_Mode = 1  # 練習モード / Training mode
-
         self.kModeValueList = [
             self.kReview_Mode,
             self.kTraining_Mode
@@ -147,12 +149,12 @@ class UserSettings:
     # 問題集のパスを設定する。
     # Set the path of the problem set.
     def set_path_of_problem(self, name, path):
-        self.setting_data.at[self.get_index(name), self.kProblemPath] = path
+        self.setting_data.at[self.__get_index(name), self.kProblemPath] = path
 
     # 問題集のパスを取得する。
     # Get the path of the problem set.
     def get_path_of_problem(self, name):
-        path = self.setting_data.at[self.get_index(name), self.kProblemPath]
+        path = self.setting_data.at[self.__get_index(name), self.kProblemPath]
         # Nanの場合は空欄にする。
         # If it is Nan, make it blank.
         if pd.isna(path):
@@ -163,22 +165,17 @@ class UserSettings:
     # 出題数を設定する。
     # Set the number of problems.
     def set_number_of_problem(self, name, num):
-        self.setting_data.at[self.get_index(name), self.kNumber] = num
+        self.setting_data.at[self.__get_index(name), self.kNumber] = num
 
     # 出題数を取得する。
     # Get the number of problems.
     def get_number_of_problem(self, name):
-        return self.setting_data.at[self.get_index(name), self.kNumber]
+        return self.setting_data.at[self.__get_index(name), self.kNumber]
 
-    # 学年の設定値を設定する。
-    # Set the grade value.
-    def set_grade_value(self, name, grade_key, value):
-        self.setting_data.at[self.get_index(name), grade_key] = value
-
-    # 学年の設定値を取得する。
+    # 指定した学年の設定値を取得する。
     # Get the grade value.
     def get_grade_value(self, name, grade_key):
-        return self.setting_data.at[self.get_index(name), grade_key]
+        return self.setting_data.at[self.__get_index(name), grade_key]
 
     # 学年の列からTrueになっているものをリストに格納する。
     # Store the items that are True in the grade column in a list.
@@ -190,24 +187,22 @@ class UserSettings:
 
         grade_list = []
         for grade, key in enumerate(self.kGradeKeyList, start=1):
-            if self.setting_data.at[self.get_index(name), key]:
+            if self.setting_data.at[self.__get_index(name), key]:
                 grade_list.append(grade)
-
-        print(grade_list)
 
         return grade_list
 
     # 出題形式を設定する。
     # Set the question format.
     def set_mode(self, name, mode):
-        self.setting_data.at[self.get_index(name), self.kMode] = mode
+        self.setting_data.at[self.__get_index(name), self.kMode] = mode
 
     # 出題形式を取得する。
     # Get the question format.
     def get_mode(self, name):
-        return self.setting_data.at[self.get_index(name), self.kMode]
+        return self.setting_data.at[self.__get_index(name), self.kMode]
 
     # UserSettingsの該当データのインデックスを取得する。
     # Get the index of the corresponding data in UserSettings.
-    def get_index(self, name):
+    def __get_index(self, name):
         return self.setting_data[self.setting_data[self.kStudentName] == name].index[0]

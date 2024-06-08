@@ -19,7 +19,7 @@ class KanjiWorkSheet:
         self.kGradeRange = [1, 6]
 
         # 問題集/ログの列
-        # Columns in the problem set/log
+        # Columns in the problem list/log
         self.kGrade = '学年'
         self.kProblem = '問題文'
         self.kAnswer = '答え'
@@ -576,4 +576,3 @@ class KanjiWorkSheet:
         Check if the received character is a kanji or not, and return the result.
         """
         return '\u4e00' <= char <= '\u9faf'
-

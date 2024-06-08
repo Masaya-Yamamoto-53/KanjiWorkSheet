@@ -5,11 +5,9 @@
 # see https://licenses.opensource.jp/MIT/MIT.html (日本語)
 
 import tkinter as tk
-
 from KanjiWorkSheet_prob import KanjiWorkSheet_prob
 from DebugPrint import DebugPrint
 from UserSettings import UserSettings
-
 from WidgetRegisterStudent import WidgetRegisterStudent
 from WidgetSelectStudent import WidgetSelectStudent
 from WidgetSelectWorkSheetPath import WidgetSelectWorkSheetPath
@@ -19,7 +17,6 @@ from WidgetSelectNumberOfProblem import WidgetSelectNumberOfProblem
 from WidgetSelectMode import WidgetSelectMode
 from WidgetScoring import WidgetScoring
 from WidgetReport import WidgetReport
-
 from CreateFilePath import CreateFilePath
 
 
