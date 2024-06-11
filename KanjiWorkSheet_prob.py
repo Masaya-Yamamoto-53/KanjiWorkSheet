@@ -471,10 +471,7 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         # 期間の指定がある場合は、その期間に該当する問題文のみ抽出する.
         if days != -1:
             date_str = tmp_list[self.kLastUpdate]
-            date_str = date_str.replace("'", "")  # ここでreplaceの結果を再代入
-            date_str = date_str.replace('"', "")  # ここでreplaceの結果を再代入
-            print(date_str)
-            delta = datetime.timedelta(days=days) < (now_time - pd.to_datetime(date_str))
+            delta = datetime.timedelta(days=days) < (now_time - date_str.apply(pd.to_datetime))
             tmp_list = tmp_list[delta]
 
         return tmp_list.index.values
