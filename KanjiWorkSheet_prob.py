@@ -472,7 +472,8 @@ class KanjiWorkSheet_prob(KanjiWorkSheet):
         if days != -1:
             date_str = tmp_list[self.kLastUpdate]
             date_str = date_str.replace("'", "")  # ここでreplaceの結果を再代入
-            print(type(date_str))
+            date_str = date_str.replace('"', "")  # ここでreplaceの結果を再代入
+            print(date_str)
             delta = datetime.timedelta(days=days) < (now_time - pd.to_datetime(date_str))
             tmp_list = tmp_list[delta]
 

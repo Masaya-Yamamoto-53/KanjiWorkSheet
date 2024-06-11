@@ -119,6 +119,9 @@ class KanjiWorkSheet:
         # Replace results other than self.report_key_list with self.kNotMk.
         self.__replace_undef_char_with_NotMk()
 
+
+        self.__replace_err_last_update()
+
         # 履歴がNanの場合は、''に置き換える。
         # Replace NaN values in history with an empty string.
         self.__replace_nan_char_with_space()
@@ -508,6 +511,9 @@ class KanjiWorkSheet:
         if len(pd_idx) > 0:
             self.worksheet.loc[pd_idx, self.kResult] = self.kNotMk
             self.save_worksheet()
+
+    def __replace_err_last_update(self):
+        print(type(self.worksheet[self.kLastUpdate]))
 
     # 履歴がNanの場合は、''に置き換える。
     def __replace_nan_char_with_space(self):

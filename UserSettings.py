@@ -172,6 +172,11 @@ class UserSettings:
     def get_number_of_problem(self, name):
         return self.setting_data.at[self.__get_index(name), self.kNumber]
 
+    # 学年の設定値を設定する.
+    # Set the grade value.
+    def set_grade_value(self, name, grade_key, value):
+        self.setting_data.at[self.__get_index(name), grade_key] = value
+
     # 指定した学年の設定値を取得する。
     # Get the grade value.
     def get_grade_value(self, name, grade_key):
